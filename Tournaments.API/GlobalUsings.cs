@@ -1,0 +1,11 @@
+global using AutoMapper;
+global using System.Text.Json;
+global using Microsoft.EntityFrameworkCore;
+global using Tournaments.API.Extensions;
+global using Tournaments.Core.DTO;
+global using Tournaments.Core.Entities;
+global using Tournaments.Core.Repositories;
+global using Tournaments.Data.DbContexts;
+global using Tournaments.Data.Mappings;
+global using Tournaments.Data.Repositories;
+global using Tournaments.Data.Seeds;

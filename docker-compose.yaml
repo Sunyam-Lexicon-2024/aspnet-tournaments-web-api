@@ -13,10 +13,11 @@ services:
 
   database: 
     image: "mcr.microsoft.com/mssql/server:2022-latest"
-    container_name: local-db
+    container_name: tournaments-db
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_DATABASE: "DevelopmentDB"
+      MSSQL_SA_PASSWORD: "N&DevelopmentPassword"
     networks:
       - development
 

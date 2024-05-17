@@ -1,9 +1,20 @@
-# .NET Containerized Development Enviroment
+# Tournaments API
+
+## Index
+- [Description](#description)
+- [Testing And Development](#testing-and-development)
+- [Contact](#contact)
 
 ## Description
-A Podman compatible (rootless) setup for container native .NET development.
-The docker-compose.yaml is only an example of a simple setup for containerized development
-with a LocalDB instance.
+A Controller based Web API, using ASP.NET Core, to handle getting, creating and 
+editing information about Tournaments and their corresponding Games.
 
-# Contact
+## Testing And Development
+```
+# Terminal; .NET SDK 8.x required
+cd Tournament.API
+dotnet run -lp seed-data
+```
+
+## Contact
 [visualarea.1@gmail.com](mailto:visualarea.1@gmail.com)
