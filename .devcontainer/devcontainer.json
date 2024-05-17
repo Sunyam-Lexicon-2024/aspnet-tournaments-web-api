@@ -1,0 +1,26 @@
+{
+	"name": "Garage 2.0",
+	"dockerComposeFile": "../docker-compose.yaml",
+	"service": "app",
+	"workspaceFolder": "/workspace",
+	"shutdownAction": "stopCompose",
+	"containerEnv": {
+		"HOME": "/home/vscode"
+	},
+	"features": {
+		"ghcr.io/azure/azure-dev/azd:0": {},
+		"ghcr.io/devcontainers/features/dotnet:2": {}
+	},
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"terminal.integrated.defaultProfile.linux": "zsh"
+			},
+			"extensions": [
+				"ms-dotnettools.csdevkit",
+				"ms-dotnettools.vscodeintellicode-csharp",
+				"ms-mssql.mssql"
+			]
+		}
+	}
+}
