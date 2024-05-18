@@ -21,7 +21,8 @@ public class GamesController(
         var games = await _unitOfWork.GameRepository.GetAllAsync();
         if (games.Any())
         {
-            return Ok(games);
+            var gameDTOs = await Task.Run(() => _mapper.Map<IEnumerable<GameDTO>>(games));
+            return Ok(gameDTOs);
         }
         else
         {
@@ -53,7 +54,7 @@ public class GamesController(
             return BadRequest();
         }
 
-        if (!await GameExists(gameDTO.Id))
+        if (await GameExists(gameDTO.Id))
         {
             return Conflict($"Game with ID {gameDTO.Id} already exists");
         }

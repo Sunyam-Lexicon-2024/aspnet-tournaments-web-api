@@ -4,7 +4,9 @@ public class TournamentMappingProfile : Profile
 {
     public TournamentMappingProfile()
     {
-        CreateMap<Tournament, TournamentCreateDTO>();
+        CreateMap<Tournament, TournamentDTO>()
+            .ConstructUsing(src => new TournamentDTO(src.Title));
         CreateMap<Tournament, TournamentCreateDTO>().ReverseMap();
+        CreateMap<Tournament, TournamentEditDTO>().ReverseMap();
     }
 }

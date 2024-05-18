@@ -15,12 +15,13 @@ public class TournamentsController(
 
     // Get
     [HttpGet]
-    public async Task<ActionResult<TournamentDTO>> GetTournaments()
+    public async Task<ActionResult<IEnumerable<TournamentDTO>>> GetTournaments()
     {
         var tournaments = await _unitOfWork.TournamentRepository.GetAllAsync();
         if (tournaments.Any())
         {
-            return Ok(tournaments);
+            var tournamentDTOs = _mapper.Map<IEnumerable<TournamentDTO>>(tournaments);
+            return Ok(tournamentDTOs);
         }
         else
         {
@@ -52,7 +53,7 @@ public class TournamentsController(
             return BadRequest();
         }
 
-        if (!await TournamentExists(tournamentDTO.Id))
+        if (await TournamentExists(tournamentDTO.Id))
         {
             return Conflict($"Game with ID {tournamentDTO.Id} already exists");
         }
@@ -71,6 +72,7 @@ public class TournamentsController(
             return StatusCode(500);
         }
     }
+    
     // Put
     [HttpPut]
     public async Task<ActionResult<TournamentDTO>> PutTournament(TournamentEditDTO editDTO)
@@ -126,7 +128,7 @@ public class TournamentsController(
 
     // Delete
     [HttpDelete]
-    public async Task<ActionResult<TournamentDTO>> Delete(int tournamentId)
+    public async Task<ActionResult<TournamentDTO>> DeleteTournament(int tournamentId)
     {
 
         if (!await TournamentExists(tournamentId))
