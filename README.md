@@ -3,7 +3,7 @@
 ## Index
 - [Description](#description)
 - [TBD](#tbd)
-- [Testing And Development](#testing-and-development)
+- [Testing/Development](#testingdevelopment)
 - [Contact](#contact)
 
 ## Description
@@ -18,7 +18,7 @@ editing information about Tournaments and their corresponding Games.
 - [ ] Page size
 - [ ] Validate Start times for matches in Seed Data
 
-## Testing And Development
+## Testing/Development
 ```
 # Terminal; .NET SDK 8.x required
 cd Tournament.API
