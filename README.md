@@ -17,6 +17,7 @@ editing information about Tournaments and their corresponding Games.
 - [ ] Pagination
 - [ ] Page size
 - [ ] Validate Start times for matches in Seed Data
+- [ ] xUnit Tests
 
 ## Testing/Development
 ```
