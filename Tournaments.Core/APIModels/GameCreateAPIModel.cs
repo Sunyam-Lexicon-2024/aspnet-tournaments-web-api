@@ -2,11 +2,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Tournaments.Core.Entities;
 
-public class TournamentEditDTO(string title)
+public class GameCreateAPIModel
 {
     public int Id { get; set; }
+    [Required]
     [MinLength(10, ErrorMessage = "Title must be at least 10 characters")]
     [MaxLength(25, ErrorMessage = "Title cannot exceed 25 characters")]
-    public string Title { get; set; } = title;
+    public string Title { get; set; } = null!;
     public DateOnly StartDate { get; set; }
 }

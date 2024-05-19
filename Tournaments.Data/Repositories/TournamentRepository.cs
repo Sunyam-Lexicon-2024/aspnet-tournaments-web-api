@@ -13,9 +13,9 @@ public class TournamentRepository(TournamentsContext tournamentsContext) : IRepo
     {
         var tournamentExists = await AnyAsync(tournament.Id);
         if (tournamentExists) return null;
-        var createdTournament = await _tournamentsContext.AddAsync(tournament);
+        var CreateAPIModelurnament = await _tournamentsContext.AddAsync(tournament);
         await _tournamentsContext.SaveChangesAsync();
-        return createdTournament.Entity;
+        return CreateAPIModelurnament.Entity;
     }
 
 

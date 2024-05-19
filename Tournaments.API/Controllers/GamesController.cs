@@ -1,7 +1,3 @@
-using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-
 namespace Tournaments.API.Controllers;
 
 [Route("[controller]")]
@@ -16,13 +12,13 @@ public class GamesController(
 
     // Get
     [HttpGet]
-    public async Task<ActionResult<GameDTO>> GetGames()
+    public async Task<ActionResult<GameAPIModel>> GetGames()
     {
         var games = await _unitOfWork.GameRepository.GetAllAsync();
         if (games.Any())
         {
-            var gameDTOs = await Task.Run(() => _mapper.Map<IEnumerable<GameDTO>>(games));
-            return Ok(gameDTOs);
+            var apiModels = await Task.Run(() => _mapper.Map<IEnumerable<GameAPIModel>>(games));
+            return Ok(apiModels);
         }
         else
         {
@@ -31,12 +27,12 @@ public class GamesController(
     }
 
     [HttpGet("{gameId}")]
-    public async Task<ActionResult<GameDTO>> GetGameById(int gameId)
+    public async Task<ActionResult<GameAPIModel>> GetGameById(int gameId)
     {
         var game = await _unitOfWork.GameRepository.GetAsync(gameId);
         if (game is not null)
         {
-            return Ok(_mapper.Map<GameDTO>(game));
+            return Ok(_mapper.Map<GameAPIModel>(game));
         }
         else
         {
@@ -46,7 +42,7 @@ public class GamesController(
 
     // Post
     [HttpPost]
-    public async Task<ActionResult<GameCreateDTO>> CreateGame(GameCreateDTO gameDTO)
+    public async Task<ActionResult<GameCreateAPIModel>> CreateGame(GameCreateAPIModel createModel)
     {
         if (!ModelState.IsValid)
         {
@@ -54,17 +50,17 @@ public class GamesController(
             return BadRequest();
         }
 
-        if (await GameExists(gameDTO.Id))
+        if (await GameExists(createModel.Id))
         {
-            return Conflict($"Game with ID {gameDTO.Id} already exists");
+            return Conflict($"Game with ID {createModel.Id} already exists");
         }
 
-        var gameToCreate = await Task.Run(() => _mapper.Map<Game>(gameDTO));
+        var gameToCreate = await Task.Run(() => _mapper.Map<Game>(createModel));
 
         try
         {
             await _unitOfWork.GameRepository.AddAsync(gameToCreate);
-            return Ok(gameDTO);
+            return Ok(createModel);
         }
         catch (DbUpdateException ex)
         {
@@ -75,17 +71,17 @@ public class GamesController(
     }
     // Put
     [HttpPut]
-    public async Task<ActionResult<GameDTO>> PutGame(GameEditDTO editDTO)
+    public async Task<ActionResult<GameAPIModel>> PutGame(GameEditAPIModel editModel)
     {
-        var gameToUpdate = _mapper.Map<Game>(editDTO);
+        var gameToUpdate = _mapper.Map<Game>(editModel);
         var updatedTournament = await _unitOfWork.GameRepository.UpdateAsync(gameToUpdate);
-        var dto = _mapper.Map<GameDTO>(updatedTournament);
-        return Ok(dto);
+        var apiModel = _mapper.Map<GameAPIModel>(updatedTournament);
+        return Ok(apiModel);
     }
 
     // Patch
     [HttpPatch("{gameId}")]
-    public async Task<ActionResult<GameDTO>> PatchGame(
+    public async Task<ActionResult<GameAPIModel>> PatchGame(
         int gameId,
         [FromBody] JsonPatchDocument<Game> patchDocument)
     {
@@ -102,7 +98,7 @@ public class GamesController(
                 }
                 else
                 {
-                    return Ok(_mapper.Map<GameDTO>(gameToPatch));
+                    return Ok(_mapper.Map<GameAPIModel>(gameToPatch));
                 }
             }
             else
@@ -118,7 +114,7 @@ public class GamesController(
     // Delete
 
     [HttpDelete]
-    public async Task<ActionResult<GameDTO>> Delete(int gameId)
+    public async Task<ActionResult<GameAPIModel>> Delete(int gameId)
     {
 
         if (!await GameExists(gameId))
@@ -128,7 +124,7 @@ public class GamesController(
         else
         {
             var deletedTournament = await _unitOfWork.GameRepository.RemoveAsync(gameId);
-            var dto = _mapper.Map<GameDTO>(deletedTournament);
+            var dto = _mapper.Map<GameAPIModel>(deletedTournament);
             return Ok(dto);
         }
     }
