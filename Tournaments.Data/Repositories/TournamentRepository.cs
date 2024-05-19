@@ -59,7 +59,7 @@ public class TournamentRepository(
                 tournaments = Search(tournaments, queryParameters.Search);
             }
 
-            if (queryParameters.Filter != null && queryParameters.Filter.Any())
+            if (queryParameters.Filter is not null && queryParameters.Filter.Any())
             {
                 tournaments = Filter(tournaments, queryParameters.Filter);
             }

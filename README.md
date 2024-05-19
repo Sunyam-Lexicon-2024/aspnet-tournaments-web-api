@@ -18,7 +18,7 @@ editing information about Tournaments and their corresponding Games.
 - [x] Filtering
 - [x] Searching
 - [x] Pagination
-- [ ] Unique Star times for games in seed data that respects corresponding tournament startdate
+- [x] Seed Data
 - [x] xUnit Tests
 
 ## Testing/Development

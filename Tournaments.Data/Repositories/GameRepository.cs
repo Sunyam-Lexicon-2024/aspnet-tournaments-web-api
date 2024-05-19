@@ -56,7 +56,7 @@ public class GameRepository(TournamentsContext tournamentsContext) : IRepository
                 games = Search(games, queryParameters.Search);
             }
 
-            if (queryParameters.Filter != null && queryParameters.Filter.Any())
+            if (queryParameters.Filter is not null && queryParameters.Filter.Any())
             {
                 games = Filter(games, queryParameters.Filter);
             }
