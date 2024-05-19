@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using System.Linq.Dynamic.Core;
 using System.Reflection;
+using Tournaments.Data.Parameters;
 
 namespace Games.Data.Repositories;
 
@@ -65,9 +66,22 @@ public class GameRepository(TournamentsContext tournamentsContext) : IRepository
                 // TBD Implement sorting direction bool
                 games = Sort(games, queryParameters.Sort, true);
             }
+
             if (queryParameters.PageSize is not null)
             {
-                games = games.Take((int)queryParameters.PageSize);
+                if (queryParameters.LastId is not null)
+                {
+                    games = games
+                    .Where(g => g.Id > queryParameters.LastId)
+                    .Take((int)queryParameters.PageSize);
+                }
+                else if (queryParameters.CurrentPage is not null)
+                {
+                    int skipCount = (int)queryParameters.PageSize * (int)queryParameters.CurrentPage!;
+                    games = games
+                    .Skip(skipCount)
+                    .Take((int)queryParameters.PageSize);
+                }
             }
         }
         return await games.ToListAsync();

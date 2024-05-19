@@ -7,6 +7,7 @@ public class QueryParameters : IQueryParameters
     public string? Sort { get; set; }
     public IDictionary<string, string>? Filter { get; set; }
     public string? Search { get; set; }
-    public int? Page { get; set; }
     public int? PageSize { get; set; }
+    public int? CurrentPage { get; set; }
+    public int? LastId { get; set; }
 }

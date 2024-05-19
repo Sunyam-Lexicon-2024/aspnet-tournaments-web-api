@@ -71,7 +71,19 @@ public class TournamentRepository(
             }
             if (queryParameters.PageSize is not null)
             {
-                tournaments = tournaments.Take((int)queryParameters.PageSize);
+                if (queryParameters.LastId is not null)
+                {
+                    tournaments = tournaments
+                    .Where(g => g.Id > queryParameters.LastId)
+                    .Take((int)queryParameters.PageSize);
+                }
+                else if (queryParameters.CurrentPage is not null)
+                {
+                    int skipCount = (int)queryParameters.PageSize * (int)queryParameters.CurrentPage!;
+                    tournaments = tournaments
+                    .Skip(skipCount)
+                    .Take((int)queryParameters.PageSize);
+                }
             }
         }
         return await tournaments.ToListAsync();
