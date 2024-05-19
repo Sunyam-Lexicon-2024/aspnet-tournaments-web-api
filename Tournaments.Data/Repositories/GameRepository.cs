@@ -1,7 +1,5 @@
-
-
-using Microsoft.EntityFrameworkCore;
-using Tournaments.Data.DbContexts;
+using System.Linq.Expressions;
+using System.Linq.Dynamic.Core;
 
 namespace Games.Data.Repositories;
 
@@ -14,10 +12,8 @@ public class GameRepository(TournamentsContext tournamentsContext) : IRepository
         var tournamentExists = await AnyAsync(tournament.Id);
         if (tournamentExists) return null;
         var createdGame = await _tournamentsContext.AddAsync(tournament);
-        await _tournamentsContext.SaveChangesAsync();
         return createdGame.Entity;
     }
-
 
     public async Task<bool> AnyAsync(int id)
     {
@@ -34,21 +30,102 @@ public class GameRepository(TournamentsContext tournamentsContext) : IRepository
         return await _tournamentsContext.Games.FirstOrDefaultAsync(t => t.Id == id);
     }
 
+    // stubbed method implementation for now
+    public async Task<Game?> GetAsyncWithChildren(int id)
+    {
+        await Task.Run(() => id);
+        return null;
+    }
+
+    public async Task<IEnumerable<Game>> GetAsyncByParams(
+        IQueryParameters queryParameters)
+    {
+        var games = _tournamentsContext.Games.AsQueryable();
+
+        if (!string.IsNullOrEmpty(queryParameters.Title))
+        {
+            return await games
+                .Where(t => t.Title.Equals(queryParameters.Title)).ToListAsync();
+        }
+        else
+        {
+            if (!string.IsNullOrEmpty(queryParameters.Search))
+            {
+                games = Search(games, queryParameters.Search);
+            }
+
+            if (queryParameters.Filter != null && queryParameters.Filter.Any())
+            {
+                games = Filter(games, queryParameters.Filter);
+            }
+
+            if (!string.IsNullOrEmpty(queryParameters.Sort))
+            {
+                // TBD Implement sorting direction bool
+                games = Sort(games, queryParameters.Sort, true);
+            }
+        }
+        return await games.ToListAsync();
+    }
+
     public async Task<Game?> RemoveAsync(int gameId)
     {
-        var gameToDelete = await _tournamentsContext.Games.FirstOrDefaultAsync(g => g.Id == gameId);
-        if(gameToDelete is null) {
+        var gameToDelete = await _tournamentsContext.Games
+            .FirstOrDefaultAsync(g => g.Id == gameId);
+        if (gameToDelete is null)
+        {
             return null;
         }
         var deletedGame = _tournamentsContext.Games.Remove(gameToDelete).Entity;
-        await _tournamentsContext.SaveChangesAsync();
         return deletedGame;
     }
 
     public async Task<Game?> UpdateAsync(Game tournament)
     {
-        var updatedGame = _tournamentsContext.Games.Update(tournament).Entity;
-        await _tournamentsContext.SaveChangesAsync();
+        var updatedGame = await Task.Run(() =>
+            _tournamentsContext.Games.Update(tournament).Entity);
         return updatedGame;
+    }
+
+    private static IQueryable<Game> Sort(
+        IQueryable<Game> query,
+        string sortColumn,
+        bool sortAscending)
+    {
+        string sortDirection = sortAscending ? "ascending" : "descending";
+        return query.OrderBy($"{sortColumn} {sortDirection}");
+    }
+
+    private static IQueryable<Game> Filter(
+        IQueryable<Game> query,
+        IDictionary<string, string> filters)
+    {
+        foreach (var filter in filters)
+        {
+            query = query.Where(g =>
+                EF.Property<string>(g, filter.Key) == filter.Value);
+        }
+
+        return query;
+    }
+
+    private static IQueryable<Game> Search(
+        IQueryable<Game> query,
+        string searchTerm)
+    {
+        var parameter = Expression.Parameter(typeof(Game), "e");
+        var property = Expression.Property(parameter, "Title");
+        var searchExpression = Expression.Constant(searchTerm);
+        var containsMethod = typeof(string).GetMethod("Contains",
+            [typeof(string)]);
+        var containsExpression = Expression.Call(
+            property,
+            containsMethod!,
+            searchExpression);
+        var lambda = Expression.Lambda<Func<Game, bool>>(
+            containsExpression,
+            parameter);
+
+        return query.Where(lambda);
     }
 }
