@@ -2,7 +2,7 @@
 
 ## Index
 - [Description](#description)
-- [TBD](#tbd)
+- [Features](#tbd)
 - [Testing/Development](#testingdevelopment)
 - [Contact](#contact)
 
@@ -10,14 +10,16 @@
 A Controller based Web API, using ASP.NET Core, to handle getting, creating and 
 editing information about Tournaments and their corresponding Games.
 
-## TBD
-- [ ] Sorting
-- [ ] Filtering
-- [ ] Searching
-- [ ] Pagination
-- [ ] Page size
-- [ ] Validate Start times for matches in Seed Data
-- [ ] xUnit Tests
+## Features
+- [x] Model Validations
+- [x] Repositories
+- [x] Unit of Work
+- [x] Sorting
+- [x] Filtering
+- [x] Searching
+- [x] Pagination
+- [ ] Unique Star times for games in seed data that respects corresponding tournament startdate
+- [x] xUnit Tests
 
 ## Testing/Development
 ```
