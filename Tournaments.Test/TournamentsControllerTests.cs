@@ -248,9 +248,7 @@ public class TournamentsControllerTests
         _mockUnitOfWork.Setup(uow => uow.TournamentRepository.GetAsync(1))
             .ReturnsAsync(tournamentToPatch);
 
-        JsonPatchDocument<Tournament> patchDocument = new();
-
-        patchDocument.Add(t => t.StartDate, new DateOnly(2024, 3, 3));
+        var patchDocument = TestJsonPatchDocument();
 
         // Act
         var response = await _tournamentsController.PatchTournament(1, patchDocument);
@@ -266,9 +264,7 @@ public class TournamentsControllerTests
         _mockUnitOfWork.Setup(uow => uow.TournamentRepository.GetAsync(1))
             .ReturnsAsync(() => null);
 
-        JsonPatchDocument<Tournament> patchDocument = new();
-
-        patchDocument.Add(t => t.StartDate, new DateOnly(2024, 3, 3));
+        var patchDocument = TestJsonPatchDocument();
 
         // Act
         var response = await _tournamentsController.PatchTournament(1, patchDocument);
@@ -281,7 +277,7 @@ public class TournamentsControllerTests
     public async Task PatchTournament_Returns_BadRequestResult_If_Patch_Document_Is_Null()
     {
         // Arrange
-        Tournament tournamentToPatch = TestTournament();
+        var tournamentToPatch = TestTournament();
 
         _mockUnitOfWork.Setup(uow => uow.TournamentRepository.GetAsync(1))
             .ReturnsAsync(tournamentToPatch);
@@ -302,9 +298,7 @@ public class TournamentsControllerTests
         _mockUnitOfWork.Setup(uow => uow.TournamentRepository.GetAsync(1))
             .ReturnsAsync(tournamentToPatch);
 
-        JsonPatchDocument<Tournament> patchDocument = new();
-
-        patchDocument.Add(t => t.StartDate, new DateOnly(2024, 3, 3));
+        var patchDocument = TestJsonPatchDocument();
 
         _tournamentsController.ModelState.AddModelError("test", "test");
 
@@ -381,5 +375,14 @@ public class TournamentsControllerTests
             Id = 1,
             StartDate = new DateOnly(2024, 5, 5)
         };
+    }
+
+    private static JsonPatchDocument<Tournament> TestJsonPatchDocument()
+    {
+        JsonPatchDocument<Tournament> patchDocument = new();
+
+        patchDocument.Add(t => t.StartDate, new DateOnly(2024, 3, 3));
+
+        return patchDocument;
     }
 }

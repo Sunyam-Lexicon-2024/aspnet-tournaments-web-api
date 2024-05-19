@@ -73,9 +73,20 @@ public class GamesController(
     [HttpPut]
     public async Task<ActionResult<GameAPIModel>> PutGame(GameEditAPIModel editModel)
     {
+        if (!ModelState.IsValid)
+        {
+            // TBD append error details here
+            return BadRequest();
+        }
+
+        if (!await GameExists(editModel.Id))
+        {
+            return NotFound();
+        }
+
         var gameToUpdate = _mapper.Map<Game>(editModel);
-        var updatedTournament = await _unitOfWork.GameRepository.UpdateAsync(gameToUpdate);
-        var apiModel = _mapper.Map<GameAPIModel>(updatedTournament);
+        var updatedGame = await _unitOfWork.GameRepository.UpdateAsync(gameToUpdate);
+        var apiModel = _mapper.Map<GameAPIModel>(updatedGame);
         return Ok(apiModel);
     }
 
@@ -114,7 +125,7 @@ public class GamesController(
     // Delete
 
     [HttpDelete]
-    public async Task<ActionResult<GameAPIModel>> Delete(int gameId)
+    public async Task<ActionResult<GameAPIModel>> DeleteGame(int gameId)
     {
 
         if (!await GameExists(gameId))
@@ -123,9 +134,9 @@ public class GamesController(
         }
         else
         {
-            var deletedTournament = await _unitOfWork.GameRepository.RemoveAsync(gameId);
-            var dto = _mapper.Map<GameAPIModel>(deletedTournament);
-            return Ok(dto);
+            var deletedGame = await _unitOfWork.GameRepository.RemoveAsync(gameId);
+            var apiModel = _mapper.Map<GameAPIModel>(deletedGame);
+            return Ok(apiModel);
         }
     }
 

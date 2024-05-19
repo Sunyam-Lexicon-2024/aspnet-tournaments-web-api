@@ -87,8 +87,8 @@ public class TournamentsController(
 
         var tournamentToUpdate = _mapper.Map<Tournament>(editModel);
         var updatedTournament = await _unitOfWork.TournamentRepository.UpdateAsync(tournamentToUpdate);
-        var dto = _mapper.Map<TournamentAPIModel>(updatedTournament);
-        return Ok(dto);
+        var apiModel = _mapper.Map<TournamentAPIModel>(updatedTournament);
+        return Ok(apiModel);
     }
 
     // Patch
