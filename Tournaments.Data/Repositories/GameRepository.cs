@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using System.Linq.Dynamic.Core;
+using System.Reflection;
 
 namespace Games.Data.Repositories;
 
@@ -102,11 +103,24 @@ public class GameRepository(TournamentsContext tournamentsContext) : IRepository
     {
         foreach (var filter in filters)
         {
+            var property = GetProperty(typeof(Game), filter.Key) ??
+            throw new InvalidOperationException($"Could not determine property from filter key {filter.Key}");
+
             query = query.Where(g =>
-                EF.Property<string>(g, filter.Key) == filter.Value);
+                EF.Property<string>(g, property) == filter.Value);
         }
 
         return query;
+    }
+
+    private static string? GetProperty(Type type, string propertyKey)
+    {
+        return type
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .FirstOrDefault(p => string.Equals(
+                p.Name,
+                propertyKey,
+                StringComparison.OrdinalIgnoreCase))?.Name;
     }
 
     private static IQueryable<Game> Search(
