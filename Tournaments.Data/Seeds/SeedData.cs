@@ -2,11 +2,12 @@ using Bogus;
 
 namespace Tournaments.Data.Seeds;
 
-public class SeedData(IUnitOfWork unitOfWork)
+public class SeedData(ILogger logger, IUnitOfWork unitOfWork)
 {
-    private IUnitOfWork _unitOfWork = unitOfWork;
-    private Faker _faker = new();
-    private Random _rnd = new();
+    private readonly ILogger _logger = logger;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly Faker _faker = new();
+    private readonly Random _rnd = new();
 
     private List<Tournament> _tournaments = [];
     private List<Game> _games = [];
@@ -14,11 +15,18 @@ public class SeedData(IUnitOfWork unitOfWork)
     public async Task InitAsync()
     {
 
-        bool tournamentExists = (await _unitOfWork.TournamentRepository.GetAllAsync()).Any();
-        bool gameExists = (await _unitOfWork.GameRepository.GetAllAsync()).Any();
+        bool tournamentExists = (await _unitOfWork.TournamentRepository
+            .GetAllAsync()).Any();
+        bool gameExists = (await _unitOfWork.GameRepository
+            .GetAllAsync()).Any();
 
         if (tournamentExists || gameExists)
         {
+            _logger.LogInformation("{Message}",
+                @$"Seed Canceled: 
+                Tournaments exist: {tournamentExists}; 
+                Games exist: {gameExists}
+            ");
             return;
         }
 
@@ -35,6 +43,7 @@ public class SeedData(IUnitOfWork unitOfWork)
             await _unitOfWork.GameRepository.AddAsync(g);
         }
 
+        await _unitOfWork.CompleteAsync();
     }
 
     private void GenerateTournaments(int count)
@@ -59,7 +68,8 @@ public class SeedData(IUnitOfWork unitOfWork)
         {
             var tournament = _faker.PickRandom(_tournaments);
             var startTime = tournament.StartDate.ToDateTime(new TimeOnly());
-            var endTime = tournament.StartDate.AddDays(_rnd.Next(3, 9)).ToDateTime(new TimeOnly());
+            var endTime = tournament.StartDate.AddDays(_rnd.Next(3, 9))
+                .ToDateTime(new TimeOnly());
             Game game = new($"Game-{i}")
             {
                 TournamentId = tournament.Id,

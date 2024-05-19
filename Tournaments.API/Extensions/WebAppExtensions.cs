@@ -12,7 +12,7 @@ public static class WebAppExtensions
         var tournamentsContext = serviceProvider.GetRequiredService<TournamentsContext>();
         var unitOfWork = serviceProvider.GetService<IUnitOfWork>();
 
-        SeedData seedData = new(unitOfWork!);
+        SeedData seedData = new(logger!, unitOfWork!);
 
         await tournamentsContext.Database.EnsureDeletedAsync();
         await tournamentsContext.Database.MigrateAsync();
@@ -23,7 +23,8 @@ public static class WebAppExtensions
         }
         catch (Exception ex)
         {
-            logger!.LogError("{Message}", JsonSerializer.Serialize(new { ex.Message, ex.StackTrace }));
+            logger!.LogError("{Message}", 
+                JsonSerializer.Serialize(new { ex.Message, ex.StackTrace }));
             throw;
         }
     }

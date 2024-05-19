@@ -4,3 +4,4 @@ global using Tournaments.Core.Repositories;
 global using Tournaments.Data.DbContexts;
 global using Tournaments.Core.APIModels;
 global using AutoMapper;
+global using Microsoft.Extensions.Logging;

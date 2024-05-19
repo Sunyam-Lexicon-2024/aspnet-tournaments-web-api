@@ -22,7 +22,8 @@ editing information about Tournaments and their corresponding Games.
 ## Testing/Development
 ```
 # Terminal; .NET SDK 8.x required
-cd Tournament.API
+cd Tournament.API && \
+dotnet dev-certs https -t && \
 dotnet run -lp seed-data
 ```
 

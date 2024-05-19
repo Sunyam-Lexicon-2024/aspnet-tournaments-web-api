@@ -1,0 +1,5 @@
+SELECT TOP (100) [Id]
+      ,[Title]
+      ,[StartDate]
+  FROM [DevelopmentDB].[dbo].[Tournaments]
+  ORDER BY [Title]

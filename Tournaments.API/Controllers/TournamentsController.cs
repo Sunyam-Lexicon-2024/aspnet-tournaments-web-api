@@ -9,7 +9,6 @@ public class TournamentsController(
     private readonly ILogger _logger = logger;
     private readonly IMapper _mapper = mapper;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
-
     // Get
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TournamentAPIModel>>> GetTournaments()
@@ -17,7 +16,8 @@ public class TournamentsController(
         var tournaments = await _unitOfWork.TournamentRepository.GetAllAsync();
         if (tournaments.Any())
         {
-            var tournamentAPIModels = _mapper.Map<IEnumerable<TournamentAPIModel>>(tournaments);
+            var tournamentAPIModels = _mapper
+                .Map<IEnumerable<TournamentAPIModel>>(tournaments);
             return Ok(tournamentAPIModels);
         }
         else
@@ -25,7 +25,7 @@ public class TournamentsController(
             return NoContent();
         }
     }
-
+    // Get {Id}
     [HttpGet("{tournamentId}")]
     public async Task<ActionResult<TournamentAPIModel>> GetTournamentById(int tournamentId)
     {
@@ -39,10 +39,10 @@ public class TournamentsController(
             return NotFound();
         }
     }
-
     // Post
     [HttpPost]
-    public async Task<ActionResult<TournamentCreateAPIModel>> CreateTournament(TournamentCreateAPIModel createModel)
+    public async Task<ActionResult<TournamentCreateAPIModel>> CreateTournament(
+        TournamentCreateAPIModel createModel)
     {
         if (!ModelState.IsValid)
         {
@@ -55,24 +55,27 @@ public class TournamentsController(
             return Conflict($"Game with ID {createModel.Id} already exists");
         }
 
-        var tournamentToCreate = await Task.Run(() => _mapper.Map<Tournament>(createModel));
+        var tournamentToCreate = await Task.Run(() => _mapper
+            .Map<Tournament>(createModel));
 
         try
         {
             await _unitOfWork.TournamentRepository.AddAsync(tournamentToCreate);
+            await _unitOfWork.CompleteAsync();
             return Ok(createModel);
         }
         catch (DbUpdateException ex)
         {
             // TBD append error details here
-            _logger.LogError("{Message}", "Could not create new tournament: " + ex.Message);
+            _logger.LogError("{Message}",
+                "Could not create new tournament: " + ex.Message);
             return StatusCode(500);
         }
     }
-    
     // Put
     [HttpPut]
-    public async Task<ActionResult<TournamentAPIModel>> PutTournament(TournamentEditAPIModel editModel)
+    public async Task<ActionResult<TournamentAPIModel>> PutTournament(
+            TournamentEditAPIModel editModel)
     {
         if (!ModelState.IsValid)
         {
@@ -85,13 +88,24 @@ public class TournamentsController(
             return NotFound();
         }
 
-        var tournamentToUpdate = _mapper.Map<Tournament>(editModel);
-        var updatedTournament = await _unitOfWork.TournamentRepository.UpdateAsync(tournamentToUpdate);
-        var apiModel = _mapper.Map<TournamentAPIModel>(updatedTournament);
-        return Ok(apiModel);
+        try
+        {
+            var tournamentToUpdate = _mapper.Map<Tournament>(editModel);
+            var updatedTournament = await _unitOfWork.TournamentRepository
+                .UpdateAsync(tournamentToUpdate);
+            await _unitOfWork.CompleteAsync();
+            var apiModel = _mapper.Map<TournamentAPIModel>(updatedTournament);
+            return Ok(apiModel);
+        }
+        catch (DbUpdateException ex)
+        {
+            // TBD append error details here
+            _logger.LogError("{Message}",
+                $"Could not create update tournament {editModel.Id}: " + ex.Message);
+            return StatusCode(500);
+        }
     }
-
-    // Patch
+    // Patch {Id}
     [HttpPatch("{tournamentId}")]
     public async Task<ActionResult<TournamentAPIModel>> PatchTournament(
         int tournamentId,
@@ -99,7 +113,9 @@ public class TournamentsController(
     {
         if (patchDocument is not null)
         {
-            var tournamentToPatch = await _unitOfWork.TournamentRepository.GetAsync(tournamentId);
+            var tournamentToPatch = await _unitOfWork.TournamentRepository
+                .GetAsync(tournamentId);
+
             if (tournamentToPatch is not null)
             {
                 patchDocument.ApplyTo(tournamentToPatch, ModelState);
@@ -123,18 +139,18 @@ public class TournamentsController(
         return BadRequest();
     }
 
-    // Delete
+    // Delete {Id}
     [HttpDelete]
     public async Task<ActionResult<TournamentAPIModel>> DeleteTournament(int tournamentId)
     {
-
         if (!await TournamentExists(tournamentId))
         {
             return NotFound();
         }
         else
         {
-            var deletedTournament = await _unitOfWork.TournamentRepository.RemoveAsync(tournamentId);
+            var deletedTournament = await _unitOfWork.TournamentRepository
+                .RemoveAsync(tournamentId);
             var dto = _mapper.Map<TournamentAPIModel>(deletedTournament);
             return Ok(dto);
         }

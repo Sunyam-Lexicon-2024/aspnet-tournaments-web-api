@@ -9,7 +9,6 @@ public class GamesController(
     private readonly ILogger _logger = logger;
     private readonly IMapper _mapper = mapper;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
-
     // Get
     [HttpGet]
     public async Task<ActionResult<GameAPIModel>> GetGames()
@@ -17,7 +16,8 @@ public class GamesController(
         var games = await _unitOfWork.GameRepository.GetAllAsync();
         if (games.Any())
         {
-            var apiModels = await Task.Run(() => _mapper.Map<IEnumerable<GameAPIModel>>(games));
+            var apiModels = await Task.Run(() => _mapper
+                .Map<IEnumerable<GameAPIModel>>(games));
             return Ok(apiModels);
         }
         else
@@ -25,7 +25,7 @@ public class GamesController(
             return NoContent();
         }
     }
-
+    // Get {Id}
     [HttpGet("{gameId}")]
     public async Task<ActionResult<GameAPIModel>> GetGameById(int gameId)
     {
@@ -39,10 +39,10 @@ public class GamesController(
             return NotFound();
         }
     }
-
     // Post
     [HttpPost]
-    public async Task<ActionResult<GameCreateAPIModel>> CreateGame(GameCreateAPIModel createModel)
+    public async Task<ActionResult<GameCreateAPIModel>> CreateGame(
+        GameCreateAPIModel createModel)
     {
         if (!ModelState.IsValid)
         {
@@ -60,12 +60,14 @@ public class GamesController(
         try
         {
             await _unitOfWork.GameRepository.AddAsync(gameToCreate);
+            await _unitOfWork.CompleteAsync();
             return Ok(createModel);
         }
         catch (DbUpdateException ex)
         {
             // TBD append error details here
-            _logger.LogError("{Message}", "Could not create new game: " + ex.Message);
+            _logger.LogError("{Message}",
+                $"Could not create new game {createModel.Id}: " + ex.Message);
             return StatusCode(500);
         }
     }
@@ -84,13 +86,25 @@ public class GamesController(
             return NotFound();
         }
 
-        var gameToUpdate = _mapper.Map<Game>(editModel);
-        var updatedGame = await _unitOfWork.GameRepository.UpdateAsync(gameToUpdate);
-        var apiModel = _mapper.Map<GameAPIModel>(updatedGame);
-        return Ok(apiModel);
+        try
+        {
+            var gameToUpdate = _mapper.Map<Game>(editModel);
+            var updatedGame = await _unitOfWork.GameRepository
+                .UpdateAsync(gameToUpdate);
+            await _unitOfWork.CompleteAsync();
+            var apiModel = _mapper.Map<GameAPIModel>(updatedGame);
+            return Ok(apiModel);
+        }
+        catch (DbUpdateException ex)
+        {
+            // TBD append error details here
+            _logger.LogError("{Message}",
+                $"Could not update game {editModel.Id}: " + ex.Message);
+            return StatusCode(500);
+        }
     }
 
-    // Patch
+    // Patch {Id}
     [HttpPatch("{gameId}")]
     public async Task<ActionResult<GameAPIModel>> PatchGame(
         int gameId,
@@ -117,26 +131,34 @@ public class GamesController(
                 return NotFound();
             }
         }
-
         // TBD append error details here
         return BadRequest();
     }
-
-    // Delete
-
+    // Delete {Id}
     [HttpDelete]
     public async Task<ActionResult<GameAPIModel>> DeleteGame(int gameId)
     {
-
         if (!await GameExists(gameId))
         {
             return NotFound();
         }
         else
         {
-            var deletedGame = await _unitOfWork.GameRepository.RemoveAsync(gameId);
-            var apiModel = _mapper.Map<GameAPIModel>(deletedGame);
-            return Ok(apiModel);
+            try
+            {
+                var deletedGame = await _unitOfWork.GameRepository
+                    .RemoveAsync(gameId);
+                await _unitOfWork.CompleteAsync();
+                var apiModel = _mapper.Map<GameAPIModel>(deletedGame);
+                return Ok(apiModel);
+            }
+            catch (DbUpdateException ex)
+            {
+                // TBD append error details here
+                _logger.LogError("{Message}",
+                    $"Could not delete game {gameId}: " + ex.Message);
+                return StatusCode(500);
+            }
         }
     }
 
