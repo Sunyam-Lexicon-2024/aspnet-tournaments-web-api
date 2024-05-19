@@ -132,7 +132,8 @@ public class GamesController(
             var gameToPatch = await _unitOfWork.GameRepository.GetAsync(gameId);
             if (gameToPatch is not null)
             {
-                patchDocument.ApplyTo(gameToPatch, ModelState);
+                await Task.Run(() => patchDocument.ApplyTo(gameToPatch, ModelState));
+                await _unitOfWork.CompleteAsync();
 
                 if (!ModelState.IsValid)
                 {

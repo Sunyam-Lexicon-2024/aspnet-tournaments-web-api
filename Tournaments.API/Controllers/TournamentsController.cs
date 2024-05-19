@@ -141,7 +141,8 @@ public class TournamentsController(
 
             if (tournamentToPatch is not null)
             {
-                patchDocument.ApplyTo(tournamentToPatch, ModelState);
+                await Task.Run(() => patchDocument.ApplyTo(tournamentToPatch, ModelState));
+                await _unitOfWork.CompleteAsync();
 
                 if (!ModelState.IsValid)
                 {
