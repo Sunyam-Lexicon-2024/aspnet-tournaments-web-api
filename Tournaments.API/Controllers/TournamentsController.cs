@@ -2,18 +2,30 @@ namespace Tournaments.API.Controllers;
 
 [Route("[controller]")]
 public class TournamentsController(
-    ILogger logger,
+    ILogger<Tournament> logger,
     IMapper mapper,
     IUnitOfWork unitOfWork) : ControllerBase
 {
-    private readonly ILogger _logger = logger;
+    private readonly ILogger<Tournament> _logger = logger;
     private readonly IMapper _mapper = mapper;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     // Get
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<TournamentAPIModel>>> GetTournaments()
+    public async Task<ActionResult<IEnumerable<TournamentAPIModel>>> GetTournaments(
+        [FromQuery] QueryParameters? queryParameters = null)
     {
-        var tournaments = await _unitOfWork.TournamentRepository.GetAllAsync();
+        IEnumerable<Tournament> tournaments;
+
+        if (queryParameters is not null)
+        {
+            tournaments = await _unitOfWork.TournamentRepository
+                .GetAsyncByParams(queryParameters);
+        }
+        else
+        {
+            tournaments = await _unitOfWork.TournamentRepository.GetAllAsync();
+        }
+
         if (tournaments.Any())
         {
             var tournamentAPIModels = _mapper
@@ -27,9 +39,23 @@ public class TournamentsController(
     }
     // Get {Id}
     [HttpGet("{tournamentId}")]
-    public async Task<ActionResult<TournamentAPIModel>> GetTournamentById(int tournamentId)
+    public async Task<ActionResult<TournamentAPIModel>> GetTournamentById(
+        int tournamentId,
+        [FromQuery] QueryParameters? queryParams = null!)
     {
-        var tournament = await _unitOfWork.TournamentRepository.GetAsync(tournamentId);
+        Tournament? tournament;
+
+        if (queryParams?.IncludeChildren is true)
+        {
+            tournament = await _unitOfWork.TournamentRepository
+                .GetAsyncWithChildren(tournamentId);
+        }
+        else
+        {
+            tournament = await _unitOfWork.TournamentRepository
+                .GetAsync(tournamentId);
+        }
+
         if (tournament is not null)
         {
             return Ok(_mapper.Map<TournamentAPIModel>(tournament));
@@ -50,11 +76,6 @@ public class TournamentsController(
             return BadRequest();
         }
 
-        if (await TournamentExists(createModel.Id))
-        {
-            return Conflict($"Game with ID {createModel.Id} already exists");
-        }
-
         var tournamentToCreate = await Task.Run(() => _mapper
             .Map<Tournament>(createModel));
 
@@ -68,7 +89,9 @@ public class TournamentsController(
         {
             // TBD append error details here
             _logger.LogError("{Message}",
-                "Could not create new tournament: " + ex.Message);
+                "Could not create new tournament" +
+                $"{JsonSerializer.Serialize(createModel)}:" +
+                ex.Message);
             return StatusCode(500);
         }
     }
@@ -118,7 +141,8 @@ public class TournamentsController(
 
             if (tournamentToPatch is not null)
             {
-                patchDocument.ApplyTo(tournamentToPatch, ModelState);
+                await Task.Run(() => patchDocument.ApplyTo(tournamentToPatch, ModelState));
+                await _unitOfWork.CompleteAsync();
 
                 if (!ModelState.IsValid)
                 {

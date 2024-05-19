@@ -23,7 +23,7 @@ public static class WebAppExtensions
         }
         catch (Exception ex)
         {
-            logger!.LogError("{Message}", 
+            logger!.LogError("{Message}",
                 JsonSerializer.Serialize(new { ex.Message, ex.StackTrace }));
             throw;
         }
@@ -32,13 +32,12 @@ public static class WebAppExtensions
     public static IServiceCollection RegisterApplicationServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddDbContext<TournamentsContext>(opt =>
-            opt.UseSqlServer(configuration.GetConnectionString("Default")));
-
-        services.AddScoped<IRepository<Tournament>, TournamentRepository>();
-        services.AddScoped<IRepository<Game>, GameRepository>();
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-        services.AddAutoMapper(config =>
+            opt.UseSqlServer(configuration.GetConnectionString("Default")))
+            .AddScoped<IRepository<Tournament>, TournamentRepository>()
+            .AddScoped<IRepository<Game>, GameRepository>()
+            .AddScoped<IUnitOfWork, UnitOfWork>()
+            .AddLogging()
+            .AddAutoMapper(config =>
         {
             config.AddProfile<TournamentMappingProfile>();
             config.AddProfile<GameMappingProfile>();

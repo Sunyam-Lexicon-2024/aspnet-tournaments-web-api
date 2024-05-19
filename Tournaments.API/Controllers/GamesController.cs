@@ -2,18 +2,30 @@ namespace Tournaments.API.Controllers;
 
 [Route("[controller]")]
 public class GamesController(
-    ILogger logger,
+    ILogger<Game> logger,
     IMapper mapper,
     IUnitOfWork unitOfWork) : ControllerBase
 {
-    private readonly ILogger _logger = logger;
+    private readonly ILogger<Game> _logger = logger;
     private readonly IMapper _mapper = mapper;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     // Get
     [HttpGet]
-    public async Task<ActionResult<GameAPIModel>> GetGames()
+    public async Task<ActionResult<IEnumerable<GameAPIModel>>> GetGames(
+        [FromQuery] QueryParameters? queryParameters = null)
     {
-        var games = await _unitOfWork.GameRepository.GetAllAsync();
+        IEnumerable<Game> games;
+
+        if (queryParameters is not null)
+        {
+            games = await _unitOfWork.GameRepository
+                .GetAsyncByParams(queryParameters);
+        }
+        else
+        {
+            games = await _unitOfWork.GameRepository.GetAllAsync();
+        }
+
         if (games.Any())
         {
             var apiModels = await Task.Run(() => _mapper
@@ -50,12 +62,8 @@ public class GamesController(
             return BadRequest();
         }
 
-        if (await GameExists(createModel.Id))
-        {
-            return Conflict($"Game with ID {createModel.Id} already exists");
-        }
-
-        var gameToCreate = await Task.Run(() => _mapper.Map<Game>(createModel));
+        var gameToCreate = await Task.Run(() => _mapper
+            .Map<Game>(createModel));
 
         try
         {
@@ -67,7 +75,9 @@ public class GamesController(
         {
             // TBD append error details here
             _logger.LogError("{Message}",
-                $"Could not create new game {createModel.Id}: " + ex.Message);
+                "Could not create new game" +
+                $"{JsonSerializer.Serialize(createModel)}:" +
+                ex.Message);
             return StatusCode(500);
         }
     }
@@ -115,7 +125,8 @@ public class GamesController(
             var gameToPatch = await _unitOfWork.GameRepository.GetAsync(gameId);
             if (gameToPatch is not null)
             {
-                patchDocument.ApplyTo(gameToPatch, ModelState);
+                await Task.Run(() => patchDocument.ApplyTo(gameToPatch, ModelState));
+                await _unitOfWork.CompleteAsync();
 
                 if (!ModelState.IsValid)
                 {
@@ -135,7 +146,7 @@ public class GamesController(
         return BadRequest();
     }
     // Delete {Id}
-    [HttpDelete]
+    [HttpDelete("{gameId}")]
     public async Task<ActionResult<GameAPIModel>> DeleteGame(int gameId)
     {
         if (!await GameExists(gameId))

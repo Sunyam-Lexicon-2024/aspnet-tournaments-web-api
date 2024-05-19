@@ -6,7 +6,7 @@ namespace Tournaments.Test;
 public class GamesControllerTests
 {
     private readonly GamesController _gamesController;
-    private readonly Mock<ILogger> _mockLogger = new();
+    private readonly Mock<ILogger<Game>> _mockLogger = new();
     private readonly IMapper _mapper;
     private readonly Mock<IUnitOfWork> _mockUnitOfWork = new();
     private readonly List<Game> _mockGames =
@@ -147,11 +147,11 @@ public class GamesControllerTests
     {
         // Arrange
         var createModel = TestCreateModel();
+        var createdGame = TestGame();
 
-        _mockUnitOfWork.Setup(uow => uow.GameRepository
-            .AnyAsync(createModel.Id))
-            .ReturnsAsync(false);
-
+        _mockUnitOfWork.Setup(uow => uow.GameRepository.AddAsync(createdGame))
+            .ReturnsAsync(createdGame);
+        
         // Act
         var response = await _gamesController.CreateGame(createModel);
 
@@ -160,31 +160,10 @@ public class GamesControllerTests
     }
 
     [Fact]
-    public async Task CreateGame_Returns_ConflictObjectResult_If_Entity_Already_Exists()
-    {
-        // Arrange
-        var createModel = TestCreateModel();
-
-        _mockUnitOfWork.Setup(uow => uow.GameRepository
-            .AnyAsync(createModel.Id))
-            .ReturnsAsync(true);
-
-        // Act
-        var response = await _gamesController.CreateGame(createModel);
-
-        // Assert
-        Assert.IsType<ConflictObjectResult>(response.Result);
-    }
-
-    [Fact]
     public async Task CreateGame_Returns_BadRequestResult_If_ModelState_Is_Invalid()
     {
         // Arrange
         var createModel = TestCreateModel();
-
-        _mockUnitOfWork.Setup(uow => uow.GameRepository
-            .AnyAsync(createModel.Id))
-            .ReturnsAsync(false);
 
         _gamesController.ModelState.AddModelError("test", "test");
 
@@ -381,9 +360,8 @@ public class GamesControllerTests
     {
         return new GameCreateAPIModel()
         {
-            Id = 1,
             Title = "Game-3",
-            StartDate = new DateOnly(2024, 5, 5)
+            StartTime = new DateTime(2024, 5, 5)
         };
     }
     private static GameEditAPIModel TestEditModel()
