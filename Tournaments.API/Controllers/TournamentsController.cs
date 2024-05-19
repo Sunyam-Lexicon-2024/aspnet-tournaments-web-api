@@ -12,7 +12,7 @@ public class TournamentsController(
     // Get
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TournamentAPIModel>>> GetTournaments(
-        [FromQuery] QueryParameters? queryParameters)
+        [FromQuery] QueryParameters? queryParameters = null)
     {
         IEnumerable<Tournament> tournaments;
 
@@ -41,7 +41,7 @@ public class TournamentsController(
     [HttpGet("{tournamentId}")]
     public async Task<ActionResult<TournamentAPIModel>> GetTournamentById(
         int tournamentId,
-        [FromQuery] QueryParameters? queryParams)
+        [FromQuery] QueryParameters? queryParams = null!)
     {
         Tournament? tournament;
 

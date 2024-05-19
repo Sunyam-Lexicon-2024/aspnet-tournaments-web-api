@@ -12,7 +12,7 @@ public class GamesController(
     // Get
     [HttpGet]
     public async Task<ActionResult<IEnumerable<GameAPIModel>>> GetGames(
-        [FromQuery] QueryParameters? queryParameters)
+        [FromQuery] QueryParameters? queryParameters = null)
     {
         IEnumerable<Game> games;
 
@@ -62,15 +62,8 @@ public class GamesController(
             return BadRequest();
         }
 
-        var tournamentExists = await _unitOfWork.TournamentRepository
-            .AnyAsync(createModel.TournamentId);
-
-        if (!tournamentExists)
-        {
-            return BadRequest($"Tournament with id {createModel.TournamentId} does not exist");
-        }
-
-        var gameToCreate = await Task.Run(() => _mapper.Map<Game>(createModel));
+        var gameToCreate = await Task.Run(() => _mapper
+            .Map<Game>(createModel));
 
         try
         {

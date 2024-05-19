@@ -6,7 +6,7 @@ namespace Tournaments.Test;
 public class TournamentsControllerTests
 {
     private readonly TournamentsController _tournamentsController;
-    private readonly Mock<ILogger> _mockLogger = new();
+    private readonly Mock<ILogger<Tournament>> _mockLogger = new();
     private readonly IMapper _mapper;
     private readonly Mock<IUnitOfWork> _mockUnitOfWork = new();
     private readonly List<Tournament> _mockTournaments =
@@ -131,10 +131,6 @@ public class TournamentsControllerTests
         // Arrange
         var createModel = TestCreateModel();
 
-        _mockUnitOfWork.Setup(uow => uow.TournamentRepository
-            .AnyAsync(createModel.Id))
-            .ReturnsAsync(false);
-
         // Act
         var response = await _tournamentsController.CreateTournament(createModel);
 
@@ -143,31 +139,10 @@ public class TournamentsControllerTests
     }
 
     [Fact]
-    public async Task CreateTournament_Returns_ConflictObjectResult_If_Entity_Already_Exists()
-    {
-        // Arrange
-        var createModel = TestCreateModel();
-
-        _mockUnitOfWork.Setup(uow => uow.TournamentRepository
-            .AnyAsync(createModel.Id))
-            .ReturnsAsync(true);
-
-        // Act
-        var response = await _tournamentsController.CreateTournament(createModel);
-
-        // Assert
-        Assert.IsType<ConflictObjectResult>(response.Result);
-    }
-
-    [Fact]
     public async Task CreateTournament_Returns_BadRequestResult_If_ModelState_Is_Invalid()
     {
         // Arrange
         var createModel = TestCreateModel();
-
-        _mockUnitOfWork.Setup(uow => uow.TournamentRepository
-            .AnyAsync(createModel.Id))
-            .ReturnsAsync(false);
 
         _tournamentsController.ModelState.AddModelError("test", "test");
 
@@ -363,7 +338,6 @@ public class TournamentsControllerTests
     {
         return new TournamentCreateAPIModel()
         {
-            Id = 1,
             Title = "Tournament-3",
             StartDate = new DateOnly(2024, 5, 5)
         };
