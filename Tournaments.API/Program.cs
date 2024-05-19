@@ -4,6 +4,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers()
                 .AddNewtonsoftJson();
 
+builder.Services.AddLogging();
+
 builder.Services.RegisterApplicationServices(builder.Configuration)
                 .AddEndpointsApiExplorer()
                 .AddSwaggerGen();

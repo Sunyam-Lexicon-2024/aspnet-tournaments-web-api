@@ -7,7 +7,7 @@ public static class WebAppExtensions
     public static async Task SeedDataAsync(this IApplicationBuilder app)
     {
         using var scope = app.ApplicationServices.CreateScope();
-        var logger = app.ApplicationServices.GetService<ILogger>();
+        var logger = app.ApplicationServices.GetService<ILogger<Program>>();
         var serviceProvider = scope.ServiceProvider;
         var tournamentsContext = serviceProvider.GetRequiredService<TournamentsContext>();
         var unitOfWork = serviceProvider.GetService<IUnitOfWork>();
