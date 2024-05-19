@@ -69,6 +69,10 @@ public class TournamentRepository(
                 // TBD Implement sorting direction bool
                 tournaments = Sort(tournaments, queryParameters.Sort, true);
             }
+            if (queryParameters.PageSize is not null)
+            {
+                tournaments = tournaments.Take((int)queryParameters.PageSize);
+            }
         }
         return await tournaments.ToListAsync();
     }

@@ -65,6 +65,10 @@ public class GameRepository(TournamentsContext tournamentsContext) : IRepository
                 // TBD Implement sorting direction bool
                 games = Sort(games, queryParameters.Sort, true);
             }
+            if (queryParameters.PageSize is not null)
+            {
+                games = games.Take((int)queryParameters.PageSize);
+            }
         }
         return await games.ToListAsync();
     }
