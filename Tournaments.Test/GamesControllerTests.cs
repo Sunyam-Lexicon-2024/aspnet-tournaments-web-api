@@ -147,6 +147,10 @@ public class GamesControllerTests
     {
         // Arrange
         var createModel = TestCreateModel();
+        var createdGame = TestGame();
+
+        _mockUnitOfWork.Setup(uow => uow.GameRepository.AddAsync(createdGame))
+            .ReturnsAsync(createdGame);
         
         // Act
         var response = await _gamesController.CreateGame(createModel);

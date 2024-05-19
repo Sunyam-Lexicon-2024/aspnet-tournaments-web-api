@@ -130,6 +130,10 @@ public class TournamentsControllerTests
     {
         // Arrange
         var createModel = TestCreateModel();
+        var createdTournament = TestTournament();
+
+        _mockUnitOfWork.Setup(uow => uow.TournamentRepository.AddAsync(createdTournament))
+            .ReturnsAsync(createdTournament);
 
         // Act
         var response = await _tournamentsController.CreateTournament(createModel);
