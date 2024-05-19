@@ -14,7 +14,6 @@ public class SeedData(ILogger logger, IUnitOfWork unitOfWork)
 
     public async Task InitAsync()
     {
-
         bool tournamentExists = (await _unitOfWork.TournamentRepository
             .GetAllAsync()).Any();
         bool gameExists = (await _unitOfWork.GameRepository
@@ -67,9 +66,30 @@ public class SeedData(ILogger logger, IUnitOfWork unitOfWork)
         for (int i = 0; i < count; i++)
         {
             var tournament = _faker.PickRandom(_tournaments);
-            var startTime = tournament.StartDate.ToDateTime(new TimeOnly());
-            var endTime = tournament.StartDate.AddDays(_rnd.Next(3, 9))
-                .ToDateTime(new TimeOnly());
+
+            DateTime startTime;
+            DateTime endTime;
+
+            if (tournament.Games.Count == 0)
+            {
+                startTime = tournament.StartDate
+                    .ToDateTime(new TimeOnly());
+                endTime = tournament.StartDate
+                    .AddDays(_rnd.Next(3, 9))
+                    .ToDateTime(new TimeOnly());
+            }
+            else
+            {
+                var previousGame = tournament.Games
+                    .OrderBy(g => g.StartTime)
+                    .Last();
+                startTime = previousGame.StartTime
+                    .AddDays(1);
+                endTime = previousGame.StartTime
+                    .AddDays(1)
+                    .AddHours(2);
+            }
+
             Game game = new($"Game-{i}")
             {
                 TournamentId = tournament.Id,
