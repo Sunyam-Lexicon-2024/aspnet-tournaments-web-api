@@ -1,6 +1,6 @@
-namespace Tournaments.Core.DTO;
+namespace Tournaments.Core.APIModels;
 
-public class GameDTO(string title): IBaseEntity {
+public class GameAPIModel(string title): IBaseEntity {
     public int Id { get; set;}
     public string Title { get; set;} = title;
     public DateTime StartTime { get; set;}

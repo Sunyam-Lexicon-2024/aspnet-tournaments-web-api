@@ -61,7 +61,7 @@ public class TournamentsControllerTests
         // Act
         var result = await _tournamentsController.GetTournaments();
         var okResult = (OkObjectResult)result.Result!;
-        var responseItems = (IEnumerable<TournamentDTO>)okResult.Value!;
+        var responseItems = (IEnumerable<TournamentAPIModel>)okResult.Value!;
 
         // Assert
         Assert.Equal(_mockTournaments.Count, responseItems.Count());
@@ -105,7 +105,7 @@ public class TournamentsControllerTests
         // Act
         var result = await _tournamentsController.GetTournamentById(1);
         var okResult = (OkObjectResult)result.Result!;
-        var responseItem = (TournamentDTO)okResult.Value!;
+        var responseItem = (TournamentAPIModel)okResult.Value!;
 
         // Assert
         Assert.Equal(responseItem.Id, _mockTournaments[0].Id);
@@ -129,18 +129,14 @@ public class TournamentsControllerTests
     public async Task CreateTournament_Returns_OkObjectResult_If_Entity_Is_Created()
     {
         // Arrange
-        TournamentCreateDTO createDTO = new()
-        {
-            Id = 3,
-            Title = "Tournament-3",
-            StartDate = new DateOnly(2024, 1, 1)
-        };
+        var createModel = TestCreateModel();
 
-        _mockUnitOfWork.Setup(uow => uow.TournamentRepository.AnyAsync(3))
+        _mockUnitOfWork.Setup(uow => uow.TournamentRepository
+            .AnyAsync(createModel.Id))
             .ReturnsAsync(false);
 
         // Act
-        var response = await _tournamentsController.CreateTournament(createDTO);
+        var response = await _tournamentsController.CreateTournament(createModel);
 
         // Assert
         Assert.IsType<OkObjectResult>(response.Result);
@@ -150,18 +146,14 @@ public class TournamentsControllerTests
     public async Task CreateTournament_Returns_ConflictObjectResult_If_Entity_Already_Exists()
     {
         // Arrange
-        TournamentCreateDTO createDTO = new()
-        {
-            Id = 3,
-            Title = "Tournament-3",
-            StartDate = new DateOnly(2024, 1, 1)
-        };
+        var createModel = TestCreateModel();
 
-        _mockUnitOfWork.Setup(uow => uow.TournamentRepository.AnyAsync(3))
+        _mockUnitOfWork.Setup(uow => uow.TournamentRepository
+            .AnyAsync(createModel.Id))
             .ReturnsAsync(true);
 
         // Act
-        var response = await _tournamentsController.CreateTournament(createDTO);
+        var response = await _tournamentsController.CreateTournament(createModel);
 
         // Assert
         Assert.IsType<ConflictObjectResult>(response.Result);
@@ -171,19 +163,16 @@ public class TournamentsControllerTests
     public async Task CreateTournament_Returns_BadRequestResult_If_ModelState_Is_Invalid()
     {
         // Arrange
-        TournamentCreateDTO createDTO = new()
-        {
-            Id = 3,
-            StartDate = new DateOnly(2024, 1, 1)
-        };
+        var createModel = TestCreateModel();
 
-        _mockUnitOfWork.Setup(uow => uow.TournamentRepository.AnyAsync(3))
+        _mockUnitOfWork.Setup(uow => uow.TournamentRepository
+            .AnyAsync(createModel.Id))
             .ReturnsAsync(false);
 
         _tournamentsController.ModelState.AddModelError("test", "test");
 
         // Act
-        var response = await _tournamentsController.CreateTournament(createDTO);
+        var response = await _tournamentsController.CreateTournament(createModel);
 
         // Assert
         Assert.IsType<BadRequestResult>(response.Result);
@@ -193,25 +182,18 @@ public class TournamentsControllerTests
     public async Task PutTournament_Returns_OkObjectResult_If_Entity_Is_Updated()
     {
         // Arrange
-        TournamentEditDTO editDTO = new("Tournament-1")
-        {
-            Id = 1,
-            StartDate = new DateOnly(2024, 5, 5)
-        };
-        Tournament tournamentToEdit = new("Tournament-1")
-        {
-            Id = 1,
-            StartDate = new DateOnly(2024, 5, 5)
-        };
+        var editModel = TestEditModel();
+        var tournamentToEdit = TestTournament();
 
-        _mockUnitOfWork.Setup(uow => uow.TournamentRepository.AnyAsync(1))
+        _mockUnitOfWork.Setup(uow => uow.TournamentRepository
+            .AnyAsync(editModel.Id))
             .ReturnsAsync(true);
 
         _mockUnitOfWork.Setup(uow => uow.TournamentRepository.UpdateAsync(tournamentToEdit))
             .ReturnsAsync(tournamentToEdit);
 
         // Act
-        var response = await _tournamentsController.PutTournament(editDTO);
+        var response = await _tournamentsController.PutTournament(editModel);
 
         // Assert
         Assert.IsType<OkObjectResult>(response.Result);
@@ -221,25 +203,18 @@ public class TournamentsControllerTests
     public async Task PutTournament_Returns_NotFoundResult_If_Entity_Does_Not_Exist()
     {
         // Arrange
-        TournamentEditDTO editDTO = new("Tournament-1")
-        {
-            Id = 1,
-            StartDate = new DateOnly(2024, 5, 5)
-        };
-        Tournament tournamentToEdit = new("Tournament-1")
-        {
-            Id = 1,
-            StartDate = new DateOnly(2024, 5, 5)
-        };
+        var editModel = TestEditModel();
+        var tournamentToEdit = TestTournament();
 
-        _mockUnitOfWork.Setup(uow => uow.TournamentRepository.AnyAsync(1))
+        _mockUnitOfWork.Setup(uow => uow.TournamentRepository
+            .AnyAsync(editModel.Id))
             .ReturnsAsync(false);
 
         _mockUnitOfWork.Setup(uow => uow.TournamentRepository.UpdateAsync(tournamentToEdit))
             .ReturnsAsync(tournamentToEdit);
 
         // Act
-        var response = await _tournamentsController.PutTournament(editDTO);
+        var response = await _tournamentsController.PutTournament(editModel);
 
         // Assert
         Assert.IsType<NotFoundResult>(response.Result);
@@ -249,19 +224,16 @@ public class TournamentsControllerTests
     public async Task PutTournament_Returns_BadRequestResult_If_ModelState_Is_Invalid()
     {
         // Arrange
-        TournamentEditDTO editDTO = new("Tournament-1")
-        {
-            Id = 1,
-            StartDate = new DateOnly(2024, 5, 5)
-        };
+        var editModel = TestEditModel();
 
-        _mockUnitOfWork.Setup(uow => uow.TournamentRepository.AnyAsync(3))
-            .ReturnsAsync(true);
+        _mockUnitOfWork.Setup(uow => uow.TournamentRepository
+            .AnyAsync(editModel.Id))
+            .ReturnsAsync(false);
 
         _tournamentsController.ModelState.AddModelError("test", "test");
 
         // Act
-        var response = await _tournamentsController.PutTournament(editDTO);
+        var response = await _tournamentsController.PutTournament(editModel);
 
         // Assert
         Assert.IsType<BadRequestResult>(response.Result);
@@ -271,16 +243,7 @@ public class TournamentsControllerTests
     public async Task PatchTournament_Returns_OkObjectResult_If_Entity_Is_Patched()
     {
         // Arrange
-        TournamentEditDTO editDTO = new("Tournament-1")
-        {
-            Id = 1,
-            StartDate = new DateOnly(2024, 5, 5)
-        };
-        Tournament tournamentToPatch = new("Tournament-1")
-        {
-            Id = 1,
-            StartDate = new DateOnly(2024, 5, 5)
-        };
+        var tournamentToPatch = TestTournament();
 
         _mockUnitOfWork.Setup(uow => uow.TournamentRepository.GetAsync(1))
             .ReturnsAsync(tournamentToPatch);
@@ -300,12 +263,6 @@ public class TournamentsControllerTests
     public async Task PatchTournament_Returns_NotFoundResult_If_Entity_Is_Does_Not_Exist()
     {
         // Arrange
-        TournamentEditDTO editDTO = new("Tournament-1")
-        {
-            Id = 1,
-            StartDate = new DateOnly(2024, 5, 5)
-        };
-
         _mockUnitOfWork.Setup(uow => uow.TournamentRepository.GetAsync(1))
             .ReturnsAsync(() => null);
 
@@ -324,17 +281,7 @@ public class TournamentsControllerTests
     public async Task PatchTournament_Returns_BadRequestResult_If_Patch_Document_Is_Null()
     {
         // Arrange
-        TournamentEditDTO editDTO = new("Tournament-1")
-        {
-            Id = 1,
-            StartDate = new DateOnly(2024, 5, 5)
-        };
-
-        Tournament tournamentToPatch = new("Tournament-1")
-        {
-            Id = 1,
-            StartDate = new DateOnly(2024, 5, 5)
-        };
+        Tournament tournamentToPatch = TestTournament();
 
         _mockUnitOfWork.Setup(uow => uow.TournamentRepository.GetAsync(1))
             .ReturnsAsync(tournamentToPatch);
@@ -350,17 +297,7 @@ public class TournamentsControllerTests
     public async Task PatchTournament_Returns_BadRequestResult_If_ModelState_Is_Invalid()
     {
         // Arrange
-        TournamentEditDTO editDTO = new("Tournament-1")
-        {
-            Id = 1,
-            StartDate = new DateOnly(2024, 5, 5)
-        };
-
-        Tournament tournamentToPatch = new("Tournament-1")
-        {
-            Id = 1,
-            StartDate = new DateOnly(2024, 5, 5)
-        };
+        var tournamentToPatch = TestTournament();
 
         _mockUnitOfWork.Setup(uow => uow.TournamentRepository.GetAsync(1))
             .ReturnsAsync(tournamentToPatch);
@@ -382,13 +319,10 @@ public class TournamentsControllerTests
     public async Task DeleteTournament_Returns_OkObjectResult_If_Entity_Is_Deleted()
     {
         // Arrange
-        Tournament deletedTournament = new("Tournament-1")
-        {
-            Id = 1,
-            StartDate = new DateOnly(2024, 1, 1)
-        };
+        var deletedTournament = TestTournament();
 
-        _mockUnitOfWork.Setup(uow => uow.TournamentRepository.AnyAsync(1))
+        _mockUnitOfWork.Setup(uow => uow.TournamentRepository
+            .AnyAsync(deletedTournament.Id))
             .ReturnsAsync(true);
 
         _mockUnitOfWork.Setup(uow => uow.TournamentRepository.RemoveAsync(1))
@@ -405,16 +339,14 @@ public class TournamentsControllerTests
     public async Task DeleteTournament_Returns_NotFoundResult_If_Entity_Does_Not_Exist()
     {
         // Arrange
-        Tournament deletedTournament = new("Tournament-1")
-        {
-            Id = 1,
-            StartDate = new DateOnly(2024, 1, 1)
-        };
+        var deletedTournament = TestTournament();
 
-        _mockUnitOfWork.Setup(uow => uow.TournamentRepository.AnyAsync(1))
+        _mockUnitOfWork.Setup(uow => uow.TournamentRepository
+            .AnyAsync(deletedTournament.Id))
             .ReturnsAsync(false);
 
-        _mockUnitOfWork.Setup(uow => uow.TournamentRepository.RemoveAsync(1))
+        _mockUnitOfWork.Setup(uow => uow.TournamentRepository
+            .RemoveAsync(deletedTournament.Id))
             .ReturnsAsync(deletedTournament);
 
         // Act
@@ -422,5 +354,32 @@ public class TournamentsControllerTests
 
         // Assert
         Assert.IsType<NotFoundResult>(response.Result);
+    }
+
+    private static Tournament TestTournament()
+    {
+        return new Tournament("Tournament-1")
+        {
+            Id = 1,
+            StartDate = new DateOnly(2024, 1, 1)
+        };
+    }
+
+    private static TournamentCreateAPIModel TestCreateModel()
+    {
+        return new TournamentCreateAPIModel()
+        {
+            Id = 1,
+            Title = "Tournament-3",
+            StartDate = new DateOnly(2024, 5, 5)
+        };
+    }
+    private static TournamentEditAPIModel TestEditModel()
+    {
+        return new TournamentEditAPIModel("Tournament-1")
+        {
+            Id = 1,
+            StartDate = new DateOnly(2024, 5, 5)
+        };
     }
 }

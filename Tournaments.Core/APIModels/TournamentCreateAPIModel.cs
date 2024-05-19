@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Tournaments.Core.DTO;
+namespace Tournaments.Core.APIModels;
 
-public class TournamentCreateDTO
+public class TournamentCreateAPIModel
 {
     public int Id { get; set; }
     [MinLength(5, ErrorMessage = "Title must be at least 5 characters")]
