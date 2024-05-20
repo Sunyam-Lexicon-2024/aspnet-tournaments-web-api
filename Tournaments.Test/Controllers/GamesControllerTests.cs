@@ -1,7 +1,4 @@
-using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.AspNetCore.Mvc;
-
-namespace Tournaments.Test;
+namespace Tournaments.Test.Controllers;
 
 public class GamesControllerTests
 {
@@ -9,34 +6,7 @@ public class GamesControllerTests
     private readonly Mock<ILogger<Game>> _mockLogger = new();
     private readonly IMapper _mapper;
     private readonly Mock<IUnitOfWork> _mockUnitOfWork = new();
-    private readonly List<Game> _mockGames =
-        [
-            new("game-1") {
-                Id = 1,
-                TournamentId = 1,
-                StartTime = new DateTime(2023,1,1)
-            },
-            new("game-2") {
-                Id = 2,
-                TournamentId = 1,
-                StartTime = new DateTime(2023,1,2)
-            },
-            new("game-3") {
-                Id = 3,
-                TournamentId = 1,
-                StartTime = new DateTime(2023,1,3)
-            },
-            new("game-4") {
-                Id = 4,
-                TournamentId = 1,
-                StartTime = new DateTime(2023,1,4)
-            },
-            new("game-5") {
-                Id = 5,
-                TournamentId = 1,
-                StartTime = new DateTime(2023,1,5)
-            },
-        ];
+    private readonly List<Game> _mockGames = GameFactory.Generate(10);
 
     public GamesControllerTests()
     {
@@ -146,12 +116,13 @@ public class GamesControllerTests
     public async Task CreateGame_Returns_OkObjectResult_If_Entity_Is_Created()
     {
         // Arrange
-        var createModel = TestCreateModel();
-        var createdGame = TestGame();
+        GameCreateAPIModel createModel = GamGameCreateAPIModelFactory
+            .GenerateSingle();
+        Game createdGame = GameFactory.GenerateSingle();
 
         _mockUnitOfWork.Setup(uow => uow.GameRepository.AddAsync(createdGame))
             .ReturnsAsync(createdGame);
-        
+
         // Act
         var response = await _gamesController.CreateGame(createModel);
 
@@ -163,7 +134,8 @@ public class GamesControllerTests
     public async Task CreateGame_Returns_BadRequestResult_If_ModelState_Is_Invalid()
     {
         // Arrange
-        var createModel = TestCreateModel();
+        GameCreateAPIModel createModel = GamGameCreateAPIModelFactory
+            .GenerateSingle();
 
         _gamesController.ModelState.AddModelError("test", "test");
 
@@ -178,8 +150,8 @@ public class GamesControllerTests
     public async Task PutGame_Returns_OkObjectResult_If_Entity_Is_Updated()
     {
         // Arrange
-        var editModel = TestEditModel();
-        var gameToEdit = TestGame();
+        GameEditAPIModel editModel = GameEditAPIModelFactory.GenerateSingle();
+        Game gameToEdit = GameFactory.GenerateSingle();
 
         _mockUnitOfWork.Setup(uow => uow.GameRepository
             .AnyAsync(editModel.Id))
@@ -199,8 +171,8 @@ public class GamesControllerTests
     public async Task PutGame_Returns_NotFoundResult_If_Entity_Does_Not_Exist()
     {
         // Arrange
-        var editModel = TestEditModel();
-        var gameToEdit = TestGame();
+        GameEditAPIModel editModel = GameEditAPIModelFactory.GenerateSingle();
+        Game gameToEdit = GameFactory.GenerateSingle();
 
         _mockUnitOfWork.Setup(uow => uow.GameRepository
             .AnyAsync(editModel.Id))
@@ -220,7 +192,7 @@ public class GamesControllerTests
     public async Task PutGame_Returns_BadRequestResult_If_ModelState_Is_Invalid()
     {
         // Arrange
-        var editModel = TestEditModel();
+        GameEditAPIModel editModel = GameEditAPIModelFactory.GenerateSingle();
 
         _mockUnitOfWork.Setup(uow => uow.GameRepository
             .AnyAsync(editModel.Id))
@@ -239,12 +211,13 @@ public class GamesControllerTests
     public async Task PatchGame_Returns_OkObjectResult_If_Entity_Is_Patched()
     {
         // Arrange
-        var gameToPatch = TestGame();
+        Game gameToPatch = GameFactory.GenerateSingle();
 
         _mockUnitOfWork.Setup(uow => uow.GameRepository.GetAsync(1))
             .ReturnsAsync(gameToPatch);
 
-        var patchDocument = TestJsonPatchDocument();
+        JsonPatchDocument<Game> patchDocument = JsonPatchDocumentFactory
+            .GenerateGamePatchDocument();
 
         // Act
         var response = await _gamesController.PatchGame(1, patchDocument);
@@ -260,7 +233,8 @@ public class GamesControllerTests
         _mockUnitOfWork.Setup(uow => uow.GameRepository.GetAsync(1))
             .ReturnsAsync(() => null);
 
-        var patchDocument = TestJsonPatchDocument();
+        JsonPatchDocument<Game> patchDocument = JsonPatchDocumentFactory
+            .GenerateGamePatchDocument();
 
         // Act
         var response = await _gamesController.PatchGame(1, patchDocument);
@@ -273,7 +247,7 @@ public class GamesControllerTests
     public async Task PatchGame_Returns_BadRequestResult_If_Patch_Document_Is_Null()
     {
         // Arrange
-        var gameToPatch = TestGame();
+        Game gameToPatch = GameFactory.GenerateSingle();
 
         _mockUnitOfWork.Setup(uow => uow.GameRepository.GetAsync(1))
             .ReturnsAsync(gameToPatch);
@@ -289,12 +263,13 @@ public class GamesControllerTests
     public async Task PatchGame_Returns_BadRequestResult_If_ModelState_Is_Invalid()
     {
         // Arrange
-        var gameToPatch = TestGame();
+        Game gameToPatch = GameFactory.GenerateSingle();
 
         _mockUnitOfWork.Setup(uow => uow.GameRepository.GetAsync(1))
             .ReturnsAsync(gameToPatch);
 
-        var patchDocument = TestJsonPatchDocument();
+        JsonPatchDocument<Game> patchDocument = JsonPatchDocumentFactory
+            .GenerateGamePatchDocument();
 
         _gamesController.ModelState.AddModelError("test", "test");
 
@@ -309,14 +284,14 @@ public class GamesControllerTests
     public async Task DeleteGame_Returns_OkObjectResult_If_Entity_Is_Deleted()
     {
         // Arrange
-        var deletedTournament = TestGame();
+        Game deletedGame = GameFactory.GenerateSingle(); 
 
         _mockUnitOfWork.Setup(uow => uow.GameRepository
-            .AnyAsync(deletedTournament.Id))
+            .AnyAsync(deletedGame.Id))
             .ReturnsAsync(true);
 
         _mockUnitOfWork.Setup(uow => uow.GameRepository.RemoveAsync(1))
-            .ReturnsAsync(deletedTournament);
+            .ReturnsAsync(deletedGame);
 
         // Act
         var response = await _gamesController.DeleteGame(1);
@@ -329,57 +304,20 @@ public class GamesControllerTests
     public async Task DeleteGame_Returns_NotFoundResult_If_Entity_Does_Not_Exist()
     {
         // Arrange
-        var deletedTournament = TestGame();
+        Game deletedGame = GameFactory.GenerateSingle(); 
 
         _mockUnitOfWork.Setup(uow => uow.GameRepository
-            .AnyAsync(deletedTournament.Id))
+            .AnyAsync(deletedGame.Id))
             .ReturnsAsync(false);
 
         _mockUnitOfWork.Setup(uow => uow.GameRepository
-            .RemoveAsync(deletedTournament.Id))
-            .ReturnsAsync(deletedTournament);
+            .RemoveAsync(deletedGame.Id))
+            .ReturnsAsync(deletedGame);
 
         // Act
         var response = await _gamesController.DeleteGame(1);
 
         // Assert
         Assert.IsType<NotFoundResult>(response.Result);
-    }
-
-    private static Game TestGame()
-    {
-        return new Game("Game-1")
-        {
-            Id = 1,
-            TournamentId = 1,
-            StartTime = new DateTime(2024, 1, 1)
-        };
-    }
-
-    private static GameCreateAPIModel TestCreateModel()
-    {
-        return new GameCreateAPIModel()
-        {
-            Title = "Game-3",
-            StartTime = new DateTime(2024, 5, 5)
-        };
-    }
-    private static GameEditAPIModel TestEditModel()
-    {
-        return new GameEditAPIModel("Game-1")
-        {
-            Id = 1,
-            TournamentId = 2,
-            StartTime = new DateTime(2024, 5, 5)
-        };
-    }
-
-    private static JsonPatchDocument<Game> TestJsonPatchDocument()
-    {
-        JsonPatchDocument<Game> patchDocument = new();
-
-        patchDocument.Add(t => t.StartTime, new DateTime(2024, 3, 3));
-
-        return patchDocument;
     }
 }

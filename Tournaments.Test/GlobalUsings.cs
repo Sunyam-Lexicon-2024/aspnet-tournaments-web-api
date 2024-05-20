@@ -6,3 +6,8 @@ global using Tournaments.Core.APIModels;
 global using Tournaments.Core.Entities;
 global using Tournaments.Core.Interfaces;
 global using Tournaments.Data.Mappings;
+global using Microsoft.AspNetCore.JsonPatch;
+global using Microsoft.AspNetCore.Mvc;
+global using Tournaments.Test.Factories;
+global using Tournaments.Test.Factories.APIModels;
+global using Tournaments.Test.Factories.Entities;
