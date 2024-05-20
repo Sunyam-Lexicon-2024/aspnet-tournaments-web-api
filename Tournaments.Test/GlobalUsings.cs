@@ -11,3 +11,4 @@ global using Microsoft.AspNetCore.Mvc;
 global using Tournaments.Test.Factories;
 global using Tournaments.Test.Factories.APIModels;
 global using Tournaments.Test.Factories.Entities;
+global using Tournaments.Data.Parameters;

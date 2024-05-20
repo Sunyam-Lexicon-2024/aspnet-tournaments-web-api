@@ -124,9 +124,26 @@ public class GameRepository(TournamentsContext tournamentsContext) : IRepository
             var property = GetProperty(typeof(Game), filter.Key) ??
             throw new InvalidOperationException($"Could not determine property from filter key {filter.Key}");
 
-            query = query.Where(g =>
-                EF.Property<string>(g, property) == filter.Value);
+            query = query
+                .Where(g =>
+                EF.Property<string>(g, property).Equals(filter.Value, 
+                    StringComparison.OrdinalIgnoreCase))
+                .Where(g =>
+                EF.Property<string>(g, property).Contains(filter.Value, 
+                    StringComparison.CurrentCultureIgnoreCase));
         }
+
+        return query;
+    }
+
+    private static IQueryable<Game> Search(
+        IQueryable<Game> query,
+        string searchTerm)
+    {
+        query = query
+                    .Where(g => g.TournamentId.ToString().Contains(searchTerm))
+                    .Where(g => g.Title.Contains(searchTerm))
+                    .Where(g => g.Id.ToString().Contains(searchTerm));
 
         return query;
     }
@@ -139,25 +156,5 @@ public class GameRepository(TournamentsContext tournamentsContext) : IRepository
                 p.Name,
                 propertyKey,
                 StringComparison.OrdinalIgnoreCase))?.Name;
-    }
-
-    private static IQueryable<Game> Search(
-        IQueryable<Game> query,
-        string searchTerm)
-    {
-        var parameter = Expression.Parameter(typeof(Game), "e");
-        var property = Expression.Property(parameter, "Title");
-        var searchExpression = Expression.Constant(searchTerm);
-        var containsMethod = typeof(string).GetMethod("Contains",
-            [typeof(string)]);
-        var containsExpression = Expression.Call(
-            property,
-            containsMethod!,
-            searchExpression);
-        var lambda = Expression.Lambda<Func<Game, bool>>(
-            containsExpression,
-            parameter);
-
-        return query.Where(lambda);
     }
 }

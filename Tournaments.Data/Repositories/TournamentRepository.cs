@@ -127,9 +127,27 @@ public class TournamentRepository(
             var property = GetProperty(typeof(Tournament), filter.Key) ??
             throw new InvalidOperationException($"Could not determine property from filter key {filter.Key}");
 
-            query = query.Where(t =>
-                EF.Property<string>(t, property) == filter.Value);
+            query = query
+                         .Where(g =>
+                         EF.Property<string>(g, property).Equals(filter.Value,
+                            StringComparison.OrdinalIgnoreCase))
+                         .Where(g =>
+                         EF.Property<string>(g, property).Contains(filter.Value,
+                            StringComparison.CurrentCultureIgnoreCase));
         }
+
+        return query;
+    }
+
+    private static IQueryable<Tournament> Search(
+        IQueryable<Tournament> query,
+        string searchTerm)
+    {
+        query = query
+                    .Where(t => t.Title.Contains(searchTerm, 
+                        StringComparison.CurrentCultureIgnoreCase))
+                    .Where(t => t.StartDate.ToString().Contains(searchTerm, 
+                        StringComparison.CurrentCultureIgnoreCase));
 
         return query;
     }
@@ -142,25 +160,5 @@ public class TournamentRepository(
                 p.Name,
                 propertyKey,
                 StringComparison.OrdinalIgnoreCase))?.Name;
-    }
-
-    private static IQueryable<Tournament> Search(
-        IQueryable<Tournament> query,
-        string searchTerm)
-    {
-        var parameter = Expression.Parameter(typeof(Tournament), "e");
-        var property = Expression.Property(parameter, "Title");
-        var searchExpression = Expression.Constant(searchTerm);
-        var containsMethod = typeof(string).GetMethod("Contains",
-            [typeof(string)]);
-        var containsExpression = Expression.Call(
-            property,
-            containsMethod!,
-            searchExpression);
-        var lambda = Expression.Lambda<Func<Tournament, bool>>(
-            containsExpression,
-            parameter);
-
-        return query.Where(lambda);
     }
 }
