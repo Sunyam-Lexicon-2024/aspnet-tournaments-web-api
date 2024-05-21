@@ -23,9 +23,9 @@ public class TournamentsController(
                 .GetAsyncByParams(queryParameters);
             if (queryParameters.PageSize is not null)
             {
-                foreach (var h in PaginationHeaders(queryParameters))
+                foreach (var (type, value) in PaginationHeaders(queryParameters))
                 {
-                    Response.Headers.Append(h.Key, h.Value);
+                    HttpContext.Response.Headers.Append(type, value);
                 }
             }
         }

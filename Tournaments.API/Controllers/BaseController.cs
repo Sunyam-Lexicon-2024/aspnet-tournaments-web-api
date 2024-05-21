@@ -21,12 +21,6 @@ public abstract class BaseController(
         };
     }
 
-    protected override void Dispose(bool disposing)
-    {
-        _unitOfWork.Dispose();
-        base.Dispose(disposing);
-    }
-
     protected virtual Dictionary<string, string> PaginationHeaders(QueryParameters queryParameters)
     {
         Dictionary<string, string> paginationHeaders = [];
@@ -44,5 +38,11 @@ public abstract class BaseController(
             }
         }
         return paginationHeaders;
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        _unitOfWork.Dispose();
+        base.Dispose(disposing);
     }
 }

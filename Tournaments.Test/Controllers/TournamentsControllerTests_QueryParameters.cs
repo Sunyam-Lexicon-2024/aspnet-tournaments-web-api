@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http;
+
 namespace Tournaments.Test.Controllers;
 
 public class TournamentsControllerTests_QueryParameters
@@ -10,7 +12,6 @@ public class TournamentsControllerTests_QueryParameters
 
     public TournamentsControllerTests_QueryParameters()
     {
-
         var config = new MapperConfiguration(config =>
         {
             config.AddProfile<TournamentMappingProfile>();
@@ -22,7 +23,13 @@ public class TournamentsControllerTests_QueryParameters
         _tournamentsController = new TournamentsController(
             _mockLogger.Object,
             _mapper,
-            _mockUnitOfWork.Object);
+            _mockUnitOfWork.Object)
+        {
+            ControllerContext = new ControllerContext()
+            {
+                HttpContext = new DefaultHttpContext()
+            }
+        };
     }
 
     [Fact]
@@ -116,7 +123,7 @@ public class TournamentsControllerTests_QueryParameters
     }
 
     [Fact]
-    public async Task GetTournaments_Returns_Paginated_Entities_By_LastId_When_LastId_Param_Is_used()
+    public async Task GetTournaments_Returns_Paginated_Entities_By_LastId_When_LastId_Param_Is_Used()
     {
         // Arrange
         QueryParameters queryParams = QueryParametersFactory.PageParamsKeySet(5, 5);
@@ -134,7 +141,25 @@ public class TournamentsControllerTests_QueryParameters
     }
 
     [Fact]
-    public async Task GetTournaments_Returns_Paginated_Entities_By_CurrentPage_When_CurrentPage_Param_Is_used()
+    public async Task GetTournaments_Returns_Pagination_Headers_When_LastId_Param_Is_Used()
+    {
+        // Arrange
+        QueryParameters queryParams = QueryParametersFactory.PageParamsKeySet(5, 5);
+        _mockUnitOfWork.Setup(uow => uow.TournamentRepository.GetAsyncByParams(queryParams))
+            .ReturnsAsync(_mockTournaments.Where(t => t.Id > queryParams.PageSize!.Value)
+                .Take(queryParams.PageSize!.Value));
+
+        // Act
+        var result = await _tournamentsController.GetTournaments(queryParams);
+        var okResult = (OkObjectResult)result.Result!;
+        var responseItems = (IEnumerable<TournamentAPIModel>)okResult.Value!;
+
+        // Assert
+        Assert.True(_tournamentsController.Response.Headers["Last-Id"].Equals("5"));
+    }
+
+    [Fact]
+    public async Task GetTournaments_Returns_Paginated_Entities_By_CurrentPage_When_CurrentPage_Param_Is_Used()
     {
         // Arrange
         QueryParameters queryParams = QueryParametersFactory.PageParamsOffset(5, 2);
@@ -150,5 +175,41 @@ public class TournamentsControllerTests_QueryParameters
 
         // Assert
         Assert.Equal(15, responseItems.Last().Id);
+    }
+
+    [Fact]
+    public async Task GetTournaments_Returns_Pagination_Headers_When_CurrentPage_Param_Is_Used()
+    {
+        // Arrange
+        QueryParameters queryParams = QueryParametersFactory.PageParamsOffset(5, 2);
+        _mockUnitOfWork.Setup(uow => uow.TournamentRepository.GetAsyncByParams(queryParams))
+            .ReturnsAsync(_mockTournaments.Where(t => t.Id > queryParams.PageSize!.Value)
+                .Take(queryParams.PageSize!.Value));
+
+        // Act
+        var result = await _tournamentsController.GetTournaments(queryParams);
+        var okResult = (OkObjectResult)result.Result!;
+        var responseItems = (IEnumerable<TournamentAPIModel>)okResult.Value!;
+
+        // Assert
+        Assert.True(_tournamentsController.Response.Headers["Current-Page"].Equals("2"));
+    }
+
+    [Fact]
+    public async Task GetTournaments_Returns_Pagination_Headers_When_Pagination_Params_Are_Used()
+    {
+        // Arrange
+        QueryParameters queryParams = QueryParametersFactory.PageParamsKeySet(5, 2);
+        _mockUnitOfWork.Setup(uow => uow.TournamentRepository.GetAsyncByParams(queryParams))
+            .ReturnsAsync(_mockTournaments.Where(t => t.Id > queryParams.PageSize!.Value)
+                .Take(queryParams.PageSize!.Value));
+
+        // Act
+        var result = await _tournamentsController.GetTournaments(queryParams);
+        var okResult = (OkObjectResult)result.Result!;
+        var responseItems = (IEnumerable<TournamentAPIModel>)okResult.Value!;
+        
+        // Assert
+        Assert.True(_tournamentsController.Response.Headers["Page-Size"].Equals("5"));
     }
 }
