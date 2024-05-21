@@ -18,4 +18,10 @@ public class UnitOfWork(
     {
         await _tournamentsContext.SaveChangesAsync();
     }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        Dispose();
+    }
 }

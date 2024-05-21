@@ -4,11 +4,10 @@ namespace Tournaments.API.Controllers;
 public class GamesController(
     ILogger<Game> logger,
     IMapper mapper,
-    IUnitOfWork unitOfWork) : ControllerBase
+    IUnitOfWork unitOfWork) : BaseController(unitOfWork)
 {
     private readonly ILogger<Game> _logger = logger;
     private readonly IMapper _mapper = mapper;
-    private readonly IUnitOfWork _unitOfWork = unitOfWork;
     // Get
     [HttpGet]
     public async Task<ActionResult<IEnumerable<GameAPIModel>>> GetGames(
@@ -58,8 +57,7 @@ public class GamesController(
     {
         if (!ModelState.IsValid)
         {
-            // TBD append error details here
-            return BadRequest();
+            return BadRequest(ErrorResponseBody(ModelState));
         }
 
         var gameToCreate = await Task.Run(() => _mapper
@@ -87,8 +85,7 @@ public class GamesController(
     {
         if (!ModelState.IsValid)
         {
-            // TBD append error details here
-            return BadRequest();
+            return BadRequest(ErrorResponseBody(ModelState));
         }
 
         if (!await GameExists(editModel.Id))
@@ -130,7 +127,7 @@ public class GamesController(
 
                 if (!ModelState.IsValid)
                 {
-                    return BadRequest(ModelState);
+                    return BadRequest(ErrorResponseBody(ModelState));
                 }
                 else
                 {
@@ -142,8 +139,7 @@ public class GamesController(
                 return NotFound();
             }
         }
-        // TBD append error details here
-        return BadRequest();
+        return BadRequest("No Patch Document In Body");
     }
     // Delete {Id}
     [HttpDelete("{gameId}")]

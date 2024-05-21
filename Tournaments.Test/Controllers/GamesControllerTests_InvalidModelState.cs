@@ -26,7 +26,7 @@ public class GamesControllerTests_InvalidModelState
     }
 
     [Fact]
-    public async Task CreateGame_Returns_BadRequestResult_If_ModelState_Is_Invalid()
+    public async Task CreateGame_Returns_BadRequestObjectResult_If_ModelState_Is_Invalid()
     {
         // Arrange
         GameCreateAPIModel createModel = GamGameCreateAPIModelFactory
@@ -36,11 +36,11 @@ public class GamesControllerTests_InvalidModelState
         var response = await _gamesController.CreateGame(createModel);
 
         // Assert
-        Assert.IsType<BadRequestResult>(response.Result);
+        Assert.IsType<BadRequestObjectResult>(response.Result);
     }
 
     [Fact]
-    public async Task PutGame_Returns_BadRequestResult_If_ModelState_Is_Invalid()
+    public async Task PutGame_Returns_BadRequestObjectResult_If_ModelState_Is_Invalid()
     {
         // Arrange
         GameEditAPIModel editModel = GameEditAPIModelFactory.GenerateSingle();
@@ -53,11 +53,11 @@ public class GamesControllerTests_InvalidModelState
         var response = await _gamesController.PutGame(editModel);
 
         // Assert
-        Assert.IsType<BadRequestResult>(response.Result);
+        Assert.IsType<BadRequestObjectResult>(response.Result);
     }
 
     [Fact]
-    public async Task PatchGame_Returns_BadRequestResult_If_ModelState_Is_Invalid()
+    public async Task PatchGame_Returns_BadRequestObjectResult_If_ModelState_Is_Invalid()
     {
         // Arrange
         Game gameToPatch = GameFactory.GenerateSingle();
@@ -72,6 +72,6 @@ public class GamesControllerTests_InvalidModelState
         var response = await _gamesController.PatchGame(1, null!);
 
         // Assert
-        Assert.IsType<BadRequestResult>(response.Result);
+        Assert.IsType<BadRequestObjectResult>(response.Result);
     }
 }

@@ -26,7 +26,7 @@ public class TournamentsControllerTests_InvalidModelState
     }
 
     [Fact]
-    public async Task CreateTournament_Returns_BadRequestResult_If_ModelState_Is_Invalid()
+    public async Task CreateTournament_Returns_BadRequestObjectResult_If_ModelState_Is_Invalid()
     {
         // Arrange
         TournamentCreateAPIModel createModel = TournamentCreateAPIModelFactory.GenerateSingle();
@@ -35,11 +35,11 @@ public class TournamentsControllerTests_InvalidModelState
         var response = await _tournamentsController.CreateTournament(createModel);
 
         // Assert
-        Assert.IsType<BadRequestResult>(response.Result);
+        Assert.IsType<BadRequestObjectResult>(response.Result);
     }
 
     [Fact]
-    public async Task PutTournament_Returns_BadRequestResult_If_ModelState_Is_Invalid()
+    public async Task PutTournament_Returns_BadRequestObjectResult_If_ModelState_Is_Invalid()
     {
         // Arrange
         TournamentEditAPIModel editModel = TournamentEditAPIModelFactory.GenerateSingle();
@@ -52,11 +52,11 @@ public class TournamentsControllerTests_InvalidModelState
         var response = await _tournamentsController.PutTournament(editModel);
 
         // Assert
-        Assert.IsType<BadRequestResult>(response.Result);
+        Assert.IsType<BadRequestObjectResult>(response.Result);
     }
 
     [Fact]
-    public async Task PatchTournament_Returns_BadRequestResult_If_ModelState_Is_Invalid()
+    public async Task PatchTournament_Returns_BadRequestObjectResult_If_ModelState_Is_Invalid()
     {
         // Arrange
         Tournament tournamentToPatch = TournamentFactory.GenerateSingle();
@@ -71,6 +71,6 @@ public class TournamentsControllerTests_InvalidModelState
         var response = await _tournamentsController.PatchTournament(1, null!);
 
         // Assert
-        Assert.IsType<BadRequestResult>(response.Result);
+        Assert.IsType<BadRequestObjectResult>(response.Result);
     }
 }

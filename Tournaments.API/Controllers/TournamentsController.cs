@@ -4,11 +4,12 @@ namespace Tournaments.API.Controllers;
 public class TournamentsController(
     ILogger<Tournament> logger,
     IMapper mapper,
-    IUnitOfWork unitOfWork) : ControllerBase
+    IUnitOfWork unitOfWork) : BaseController(unitOfWork)
 {
+
     private readonly ILogger<Tournament> _logger = logger;
     private readonly IMapper _mapper = mapper;
-    private readonly IUnitOfWork _unitOfWork = unitOfWork;
+
     // Get
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TournamentAPIModel>>> GetTournaments(
@@ -72,8 +73,7 @@ public class TournamentsController(
     {
         if (!ModelState.IsValid)
         {
-            // TBD append error details here
-            return BadRequest();
+            return BadRequest(ErrorResponseBody(ModelState));
         }
 
         var tournamentToCreate = await Task.Run(() => _mapper
@@ -102,8 +102,7 @@ public class TournamentsController(
     {
         if (!ModelState.IsValid)
         {
-            // TBD append error details here
-            return BadRequest();
+            return BadRequest(ErrorResponseBody(ModelState));
         }
 
         if (!await TournamentExists(editModel.Id))
@@ -146,7 +145,7 @@ public class TournamentsController(
 
                 if (!ModelState.IsValid)
                 {
-                    return BadRequest(ModelState);
+                    return BadRequest(ErrorResponseBody(ModelState));
                 }
                 else
                 {
@@ -159,8 +158,7 @@ public class TournamentsController(
             }
         }
 
-        // TBD append error details here
-        return BadRequest();
+        return BadRequest("No Patch Document In Body");
     }
 
     // Delete {Id}

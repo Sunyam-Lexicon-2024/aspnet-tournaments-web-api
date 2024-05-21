@@ -130,21 +130,6 @@ public class TournamentsControllerTests
     }
 
     [Fact]
-    public async Task CreateTournament_Returns_BadRequestResult_If_ModelState_Is_Invalid()
-    {
-        // Arrange
-        TournamentCreateAPIModel createModel = TournamentCreateAPIModelFactory.GenerateSingle();
-
-        _tournamentsController.ModelState.AddModelError("test", "test");
-
-        // Act
-        var response = await _tournamentsController.CreateTournament(createModel);
-
-        // Assert
-        Assert.IsType<BadRequestResult>(response.Result);
-    }
-
-    [Fact]
     public async Task PutTournament_Returns_OkObjectResult_If_Entity_Is_Updated()
     {
         // Arrange
@@ -187,25 +172,6 @@ public class TournamentsControllerTests
     }
 
     [Fact]
-    public async Task PutTournament_Returns_BadRequestResult_If_ModelState_Is_Invalid()
-    {
-        // Arrange
-        TournamentEditAPIModel editModel = TournamentEditAPIModelFactory.GenerateSingle();
-
-        _mockUnitOfWork.Setup(uow => uow.TournamentRepository
-            .AnyAsync(editModel.Id))
-            .ReturnsAsync(false);
-
-        _tournamentsController.ModelState.AddModelError("test", "test");
-
-        // Act
-        var response = await _tournamentsController.PutTournament(editModel);
-
-        // Assert
-        Assert.IsType<BadRequestResult>(response.Result);
-    }
-
-    [Fact]
     public async Task PatchTournament_Returns_OkObjectResult_If_Entity_Is_Patched()
     {
         // Arrange
@@ -240,44 +206,7 @@ public class TournamentsControllerTests
         // Assert
         Assert.IsType<NotFoundResult>(response.Result);
     }
-
-    [Fact]
-    public async Task PatchTournament_Returns_BadRequestResult_If_Patch_Document_Is_Null()
-    {
-        // Arrange
-        Tournament tournamentToPatch = TournamentFactory.GenerateSingle();
-
-        _mockUnitOfWork.Setup(uow => uow.TournamentRepository.GetAsync(1))
-            .ReturnsAsync(tournamentToPatch);
-
-        // Act
-        var response = await _tournamentsController.PatchTournament(1, null!);
-
-        // Assert
-        Assert.IsType<BadRequestResult>(response.Result);
-    }
-
-    [Fact]
-    public async Task PatchTournament_Returns_BadRequestResult_If_ModelState_Is_Invalid()
-    {
-        // Arrange
-        Tournament tournamentToPatch = TournamentFactory.GenerateSingle();
-
-        _mockUnitOfWork.Setup(uow => uow.TournamentRepository.GetAsync(1))
-            .ReturnsAsync(tournamentToPatch);
-
-        JsonPatchDocument<Tournament> patchDocument = JsonPatchDocumentFactory
-              .GenerateTournamentPatchDocument();
-
-        _tournamentsController.ModelState.AddModelError("test", "test");
-
-        // Act
-        var response = await _tournamentsController.PatchTournament(1, null!);
-
-        // Assert
-        Assert.IsType<BadRequestResult>(response.Result);
-    }
-
+    
     [Fact]
     public async Task DeleteTournament_Returns_OkObjectResult_If_Entity_Is_Deleted()
     {
