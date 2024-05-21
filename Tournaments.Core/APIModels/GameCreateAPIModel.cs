@@ -5,7 +5,7 @@ namespace Tournaments.Core.Entities;
 public class GameCreateAPIModel
 {
     [Required]
-    [MinLength(10, ErrorMessage = "Title must be at least 10 characters")]
+    [MinLength(5, ErrorMessage = "Title must be at least 5 characters")]
     [MaxLength(25, ErrorMessage = "Title cannot exceed 25 characters")]
     public string Title { get; set; } = null!;
     [Required]

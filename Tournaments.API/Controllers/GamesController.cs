@@ -19,6 +19,13 @@ public class GamesController(
         {
             games = await _unitOfWork.GameRepository
                 .GetAsyncByParams(queryParameters);
+            if (queryParameters.PageSize is not null)
+            {
+                foreach (var (type, value) in PaginationHeaders(queryParameters))
+                {
+                    HttpContext.Response.Headers.Append(type, value);
+                }
+            }
         }
         else
         {

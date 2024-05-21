@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http;
+
 namespace Tournaments.Test.Controllers;
 
 public class GamesControllerTests_QueryParameters
@@ -10,7 +12,6 @@ public class GamesControllerTests_QueryParameters
 
     public GamesControllerTests_QueryParameters()
     {
-
         var config = new MapperConfiguration(config =>
         {
             config.AddProfile<TournamentMappingProfile>();
@@ -22,7 +23,13 @@ public class GamesControllerTests_QueryParameters
         _gamesController = new GamesController(
             _mockLogger.Object,
             _mapper,
-            _mockUnitOfWork.Object);
+            _mockUnitOfWork.Object)
+        {
+            ControllerContext = new ControllerContext()
+            {
+                HttpContext = new DefaultHttpContext()
+            }
+        };
     }
 
     [Fact]
@@ -31,7 +38,7 @@ public class GamesControllerTests_QueryParameters
         // Arrange
         QueryParameters queryParams = QueryParametersFactory.SortParams("Id");
         _mockUnitOfWork.Setup(uow => uow.GameRepository.GetAsyncByParams(queryParams))
-            .ReturnsAsync(_mockGames.OrderBy(t => t.Id));
+            .ReturnsAsync(_mockGames.OrderBy(g => g.Id));
 
         // Act
         var result = await _gamesController.GetGames(queryParams);
@@ -48,7 +55,7 @@ public class GamesControllerTests_QueryParameters
         // Arrange
         QueryParameters queryParams = QueryParametersFactory.TitleParams("Game-1");
         _mockUnitOfWork.Setup(uow => uow.GameRepository.GetAsyncByParams(queryParams))
-            .ReturnsAsync(_mockGames.Where(t => t.Title.Equals(queryParams.Title)));
+            .ReturnsAsync(_mockGames.Where(g => g.Title.Equals(queryParams.Title)));
 
         // Act
         var result = await _gamesController.GetGames(queryParams);
@@ -65,7 +72,7 @@ public class GamesControllerTests_QueryParameters
         // Arrange
         QueryParameters queryParams = QueryParametersFactory.SearchParams("Game-1");
         _mockUnitOfWork.Setup(uow => uow.GameRepository.GetAsyncByParams(queryParams))
-            .ReturnsAsync(_mockGames.Where(t => t.Title.Contains(queryParams.Search!)));
+            .ReturnsAsync(_mockGames.Where(g => g.Title.Contains(queryParams.Search!)));
 
         // Act
         var result = await _gamesController.GetGames(queryParams);
@@ -85,7 +92,7 @@ public class GamesControllerTests_QueryParameters
         };
         QueryParameters queryParams = QueryParametersFactory.FilterParams(filter);
         _mockUnitOfWork.Setup(uow => uow.GameRepository.GetAsyncByParams(queryParams))
-                    .ReturnsAsync(_mockGames.Where(t => t.Title.Equals(filter.Values.First())));
+                    .ReturnsAsync(_mockGames.Where(g => g.Title.Equals(filter.Values.First())));
 
 
         // Act
@@ -103,7 +110,7 @@ public class GamesControllerTests_QueryParameters
         // Arrange
         QueryParameters queryParams = QueryParametersFactory.PageParamsKeySet(5, 5);
         _mockUnitOfWork.Setup(uow => uow.GameRepository.GetAsyncByParams(queryParams))
-            .ReturnsAsync(_mockGames.Where(t => t.Id > queryParams.PageSize!.Value)
+            .ReturnsAsync(_mockGames.Where(g => g.Id > queryParams.PageSize!.Value)
                 .Take(queryParams.PageSize!.Value));
 
         // Act
@@ -114,6 +121,25 @@ public class GamesControllerTests_QueryParameters
         // Assert
         Assert.Equal(10, responseItems.Last().Id);
     }
+
+    [Fact]
+    public async Task GetTournaments_Returns_Pagination_Headers_When_LastId_Param_Is_Used()
+    {
+        // Arrange
+        QueryParameters queryParams = QueryParametersFactory.PageParamsKeySet(5, 5);
+        _mockUnitOfWork.Setup(uow => uow.GameRepository.GetAsyncByParams(queryParams))
+            .ReturnsAsync(_mockGames.Where(g => g.Id > queryParams.PageSize!.Value)
+                .Take(queryParams.PageSize!.Value));
+
+        // Act
+        var result = await _gamesController.GetGames(queryParams);
+        var okResult = (OkObjectResult)result.Result!;
+        var responseItems = (IEnumerable<GameAPIModel>)okResult.Value!;
+
+        // Assert
+        Assert.True(_gamesController.Response.Headers["Last-Id"].Equals("5"));
+    }
+
 
     [Fact]
     public async Task GetGames_Returns_Paginated_Entities_By_CurrentPage_When_CurrentPage_Param_Is_used()
@@ -132,5 +158,41 @@ public class GamesControllerTests_QueryParameters
 
         // Assert
         Assert.Equal(15, responseItems.Last().Id);
+    }
+
+    [Fact]
+    public async Task GetGames_Returns_Pagination_Headers_When_CurrentPage_Param_Is_Used()
+    {
+        // Arrange
+        QueryParameters queryParams = QueryParametersFactory.PageParamsOffset(5, 2);
+        _mockUnitOfWork.Setup(uow => uow.GameRepository.GetAsyncByParams(queryParams))
+            .ReturnsAsync(_mockGames.Where(g => g.Id > queryParams.PageSize!.Value)
+                .Take(queryParams.PageSize!.Value));
+
+        // Act
+        var result = await _gamesController.GetGames(queryParams);
+        var okResult = (OkObjectResult)result.Result!;
+        var responseItems = (IEnumerable<GameAPIModel>)okResult.Value!;
+
+        // Assert
+        Assert.True(_gamesController.Response.Headers["Current-Page"].Equals("2"));
+    }
+
+    [Fact]
+    public async Task GetGames_Returns_Pagination_Headers_When_Pagination_Params_Are_Used()
+    {
+        // Arrange
+        QueryParameters queryParams = QueryParametersFactory.PageParamsKeySet(5, 2);
+        _mockUnitOfWork.Setup(uow => uow.GameRepository.GetAsyncByParams(queryParams))
+            .ReturnsAsync(_mockGames.Where(g => g.Id > queryParams.PageSize!.Value)
+                .Take(queryParams.PageSize!.Value));
+
+        // Act
+        var result = await _gamesController.GetGames(queryParams);
+        var okResult = (OkObjectResult)result.Result!;
+        var responseItems = (IEnumerable<GameAPIModel>)okResult.Value!;
+
+        // Assert
+        Assert.True(_gamesController.Response.Headers["Page-Size"].Equals("5"));
     }
 }
