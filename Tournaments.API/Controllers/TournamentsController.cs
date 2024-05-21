@@ -21,6 +21,13 @@ public class TournamentsController(
         {
             tournaments = await _unitOfWork.TournamentRepository
                 .GetAsyncByParams(queryParameters);
+            if (queryParameters.PageSize is not null)
+            {
+                foreach (var h in PaginationHeaders(queryParameters))
+                {
+                    Response.Headers.Append(h.Key, h.Value);
+                }
+            }
         }
         else
         {

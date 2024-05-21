@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Tournaments.API.Controllers;
@@ -20,8 +21,28 @@ public abstract class BaseController(
         };
     }
 
-    protected override void Dispose(bool disposing) {
+    protected override void Dispose(bool disposing)
+    {
         _unitOfWork.Dispose();
         base.Dispose(disposing);
+    }
+
+    protected virtual Dictionary<string, string> PaginationHeaders(QueryParameters queryParameters)
+    {
+        Dictionary<string, string> paginationHeaders = [];
+
+        if (queryParameters.PageSize is not null)
+        {
+            paginationHeaders.Add("Page-Size", queryParameters.PageSize.ToString()!);
+            if (queryParameters.CurrentPage is not null)
+            {
+                paginationHeaders.Add("Current-Page", queryParameters.CurrentPage.ToString()!);
+            }
+            else if (queryParameters.LastId is not null)
+            {
+                paginationHeaders.Add("Last-Id", queryParameters.LastId.ToString()!);
+            }
+        }
+        return paginationHeaders;
     }
 }
