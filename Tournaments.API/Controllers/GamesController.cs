@@ -22,7 +22,13 @@ public class GamesController(
     <summary>
     Returns all Games
     </summary>
+     <remarks>
+    Sample request: 
+        GET /Games
+    </remarks>
     <returns> A list of all Games </returns>
+    <response code="200"> Returns All Games</response>
+    <response code="204"> If no Games Exist</response>
     */
     [HttpGet]
     [ProducesResponseType<IEnumerable<GameAPIModel>>(StatusCodes.Status200OK)]
@@ -71,6 +77,8 @@ public class GamesController(
     Sample request: 
             GET /Games/1
     </remarks>
+    <response code="200"> Returns the specified Game</response>
+    <response code="404"> If the specified Game does not exist</response>
     */
     [HttpGet("{gameId}")]
     [ProducesResponseType<GameAPIModel>(StatusCodes.Status200OK)]
@@ -104,6 +112,9 @@ public class GamesController(
                 "startTime": "2024-05-23T13:39:43.974Z",
             }
     </remarks>
+    <response code="200"> Returns the newly created Game</response>
+    <response code="400"> If one or more input attributes do not validate</response>
+    <response code="500"> If an unexpected result is produced by the server</response>
     */
     [HttpPost]
     [ProducesResponseType<GameAPIModel>(StatusCodes.Status200OK)]
@@ -159,6 +170,9 @@ public class GamesController(
             },
             ]
     </remarks>
+    <response code="200"> Returns a list of the newly created Games</response>
+    <response code="400"> If one or more input attributes do not validate</response>
+    <response code="500"> If an unexpected result is produced by the server</response>
     */
     [HttpPost]
     [Route("collection")]
@@ -227,6 +241,10 @@ public class GamesController(
                 "startTime": "2024-05-23T13:39:43.974Z",
             }
     </remarks>
+    <response code="200"> Returns the updated Game</response>
+    <response code="400"> If one or more input attributes do not validate</response>
+    <response code="404"> If the specified Game does not exist</response>
+    <response code="500"> If an unexpected result is produced by the server</response>
     */
     [HttpPut]
     [ProducesResponseType<GameAPIModel>(StatusCodes.Status200OK)]
@@ -286,6 +304,11 @@ public class GamesController(
             }
             ]
     </remarks>
+    <response code="200"> Returns a list of the updated Games</response>
+    <response code="400"> 
+    If one or more input attributes do not validate or if one or more of the Games specified does not exist
+    </response>
+    <response code="500"> If an unexpected result is produced by the server</response>
     */
     [HttpPut]
     [Route("collection")]
@@ -350,7 +373,7 @@ public class GamesController(
 
     /** 
     <summary>
-    Partially updates multiple Game
+    Partially updates a specified Game
     </summary>
     <param name="gameId"></param>
     <param name="patchDocument"></param>
@@ -358,7 +381,19 @@ public class GamesController(
     <remarks>
     Sample request: 
             PATCH /Games/1
+            [
+            {
+                "operationType": 0,
+                "path": "/title",
+                "op": "add",
+                "value": "new-title"
+            }
+            ]
     </remarks>
+    <response code="200"> Returns the partially updated Game</response>
+    <response code="400"> If one or more input attributes do not validate</response>
+    <response code="404"> If the specified Game does not exist</response>
+    <response code="500"> If an unexpected result is produced by the server</response>
     */
     [HttpPatch("{gameId}")]
     [ProducesResponseType<GameAPIModel>(StatusCodes.Status200OK)]
@@ -422,6 +457,9 @@ public class GamesController(
     Sample request: 
             DELETE /Games/1
     </remarks>
+    <response code="200"> Returns the deleted Game</response>
+    <response code="404"> If the specified Game does not exist</response>
+    <response code="500"> If an unexpected result is produced by the server</response>
     */
     [HttpDelete("{gameId}")]
     [ProducesResponseType<GameAPIModel>(StatusCodes.Status200OK)]

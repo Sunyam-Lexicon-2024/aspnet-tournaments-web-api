@@ -1,4 +1,6 @@
+using System.Reflection;
 using Games.Data.Repositories;
+using Microsoft.OpenApi.Models;
 
 namespace Tournaments.API.Extensions;
 
@@ -41,6 +43,27 @@ public static class WebAppExtensions
         {
             config.AddProfile<TournamentMappingProfile>();
             config.AddProfile<GameMappingProfile>();
+        });
+
+        services.AddEndpointsApiExplorer();
+
+        services.AddSwaggerGen(options =>
+        {
+            options.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Version = "v1",
+                Title = "Tournaments API",
+                Description = "An ASP.NET Core Web API for managing Tournaments and their corresponding Games",
+                Contact = new OpenApiContact
+                {
+                    Name = "Suny-Am",
+                    Email = "visualarea.1@gmail.com",
+                    Url = new Uri("https://github.com/suny-am")
+                },
+            });
+            // using System.Reflection;
+            var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
         });
 
         return services;

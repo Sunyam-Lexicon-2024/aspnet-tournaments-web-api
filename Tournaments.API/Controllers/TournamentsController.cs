@@ -7,7 +7,7 @@ namespace Tournaments.API.Controllers;
  <param name="logger"></param>
  <param name="mapper"></param>
  <param name="unitOfWork"></param>
- <returns> A TournamentsController Instance </returns>
+ <returns> A new TournamentsController Instance </returns>
  */
 [Route("[controller]")]
 public class TournamentsController(
@@ -21,13 +21,15 @@ public class TournamentsController(
 
     /**
     <summary>
-    Creates a new tournament
+    Retrieves all existing Tournaments
     </summary>
-    <returns> A list of newly created tournaments </returns>
+    <returns> A list of all existing Tournaments </returns>
     <remarks>
     Sample request: 
-        GET /Tournaments/1
+        GET /Tournaments
     </remarks>
+    <response code="200"> Returns All Tournaments</response>
+    <response code="204"> If no Tournaments Exist</response>
     */
     [HttpGet]
     [ProducesResponseType<IEnumerable<TournamentAPIModel>>(StatusCodes.Status200OK)]
@@ -68,15 +70,17 @@ public class TournamentsController(
 
     /**
     <summary>
-    Creates a new tournament
+    Retrieves a select Tournament by ID
     </summary>
     <param name="tournamentId"></param>
     <param name="queryParams"></param>
-    <returns> A list of newly created tournaments </returns>
+    <returns> The specified Tournament </returns>
     <remarks>
     Sample request: 
         GET /Tournaments/1
     </remarks>
+    <response code="200"> Returns the specified Tournament</response>
+    <response code="404"> If the specified Tournament does not exist</response>
     */
     [HttpGet("{tournamentId}")]
     [ProducesResponseType<TournamentAPIModel>(StatusCodes.Status200OK)]
@@ -113,14 +117,17 @@ public class TournamentsController(
     Creates a new tournament
     </summary>
     <param name="createModel"></param>
-    <returns> A list of newly created tournaments </returns>
+    <returns> The newly created Tournament </returns>
     <remarks>
     Sample request: 
-        POST /Tournaments/collection {
+        POST /Tournaments {
             "title": "Tournament-1",
             "startTime": "2024-05-23T13:39:43.974Z",
         }
     </remarks>
+    <response code="200"> Returns the newly created Tournament</response>
+    <response code="400"> If one or more input attributes do not validate</response>
+    <response code="500"> If an unexpected result is produced by the server</response>
     */
     [HttpPost]
     [ProducesResponseType<TournamentAPIModel>(StatusCodes.Status200OK)]
@@ -160,7 +167,7 @@ public class TournamentsController(
     Creates multiple tournaments at once
     </summary>
     <param name="createModels"></param>
-    <returns> A list of newly created tournaments </returns>
+    <returns> A list of the newly created Tournaments </returns>
     <remarks>
     Sample request: 
         POST /Tournaments/collection 
@@ -174,6 +181,9 @@ public class TournamentsController(
         }
         ]
     </remarks>
+    <response code="200"> Returns a list of the newly created Tournaments</response>
+    <response code="400"> If one or more input attributes do not validate</response>
+    <response code="500"> If an unexpected result is produced by the server</response>
     */
     [HttpPost]
     [Route("collection")]
@@ -223,12 +233,16 @@ public class TournamentsController(
 
 
     /**
- <summary>
- Updates a Tournament
- </summary>
- <param name="editModel"></param>
- <returns> The updated Tournament </returns>
- */
+    <summary>
+    Updates a Tournament
+    </summary>
+    <param name="editModel"></param>
+    <returns> The updated Tournament </returns>
+    <response code="200"> Returns the updated Tournament</response>
+    <response code="400"> If one or more input attributes do not validate</response>
+    <response code="404"> If the specified Tournament does not exist</response>
+    <response code="500"> If an unexpected result is produced by the server</response>
+    */
     [HttpPut]
     [ProducesResponseType<TournamentAPIModel>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -265,12 +279,17 @@ public class TournamentsController(
     }
 
     /**
-<summary>
-Updates multiple Tournaments
-</summary>
-<param name="editModels"></param>
-<returns> A list of the updated Tournaments </returns>
-*/
+    <summary>
+    Updates multiple Tournaments
+    </summary>
+    <param name="editModels"></param>
+    <returns> A list of the updated Tournaments </returns>
+    <response code="200"> Returns a list of the updated Tournaments</response>
+    <response code="400"> 
+    If one or more input attributes do not validate or if one or more of the Tournaments specified does not exist
+    </response>
+    <response code="500"> If an unexpected result is produced by the server</response>
+    */ 
     [HttpPut]
     [Route("collection")]
     [ProducesResponseType<TournamentAPIModel>(StatusCodes.Status200OK)]
@@ -337,6 +356,22 @@ Updates multiple Tournaments
     <param name="tournamentId"></param>
     <param name="patchDocument"></param>
     <returns> The partilly updated Tournament </returns>
+    <remarks>
+    Sample request: 
+            PATCH /Tournaments/1 
+            [
+            {
+                "operationType": 0,
+                "path": "/title",
+                "op": "add",
+                "value": "new-title"
+            }
+            ]
+    </remarks>
+    <response code="200"> Returns the partially updated Tournament</response>
+    <response code="400"> If one or more input attributes do not validate</response>
+    <response code="404"> If the specified Tournament does not exist</response>
+    <response code="500"> If an unexpected result is produced by the server</response>
     */
     [HttpPatch("{tournamentId}")]
     [ProducesResponseType<TournamentAPIModel>(StatusCodes.Status200OK)]
@@ -397,6 +432,13 @@ Updates multiple Tournaments
     </summary>
     <param name="tournamentId"></param>
     <returns> The deleted Tournament </returns>
+    <remarks>
+    Sample request: 
+            DELETE /Tournaments/1
+    </remarks>
+    <response code="200"> Returns the deleted Tournament</response>
+    <response code="404"> If the specified Tournament does not exist</response>
+    <response code="500"> If an unexpected result is produced by the server</response>
     */
     [HttpDelete]
     [ProducesResponseType<TournamentAPIModel>(StatusCodes.Status200OK)]

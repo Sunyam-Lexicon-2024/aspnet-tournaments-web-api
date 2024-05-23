@@ -6,16 +6,18 @@ builder.Services.AddControllers()
 
 builder.Services.AddLogging();
 
-builder.Services.RegisterApplicationServices(builder.Configuration)
-                .AddEndpointsApiExplorer()
-                .AddSwaggerGen();
-
+builder.Services.RegisterApplicationServices(builder.Configuration);
+                
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger().UseSwaggerUI();
+    app.UseSwagger()
+        .UseSwaggerUI(options => {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+        options.RoutePrefix = string.Empty;
+    });
 
     if (Environment.GetEnvironmentVariable("SEED_DATA") == "1")
     {
