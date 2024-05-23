@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+using Tournaments.Core.Interfaces;
 
 namespace Tournaments.Core.Entities;
 
-public class GameCreateAPIModel
+public class GameCreateAPIModel : IBaseAPIModel
 {
     [Required]
     [MinLength(5, ErrorMessage = "Title must be at least 5 characters")]

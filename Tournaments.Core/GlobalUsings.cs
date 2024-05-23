@@ -1,2 +1,2 @@
-global using Tournaments.Core.Entities.Interfaces;
 global using Tournaments.Core.Entities;
+global using Tournaments.Core.Interfaces;

@@ -11,16 +11,16 @@ public class TournamentRepository(
 
     public async Task<Tournament?> AddAsync(Tournament tournament)
     {
-        var tournamentExists = await AnyAsync(tournament.Id);
+        var tournamentExists = await AnyAsync(t => t.Id == tournament.Id);
         if (tournamentExists) return null;
         var CreateAPIModelurnament = await _tournamentsContext.AddAsync(tournament);
         await _tournamentsContext.SaveChangesAsync();
         return CreateAPIModelurnament.Entity;
     }
 
-    public async Task<bool> AnyAsync(int id)
+    public async Task<bool> AnyAsync(Expression<Func<Tournament, bool>> predicate)
     {
-        return await _tournamentsContext.Tournaments.AnyAsync(t => t.Id == id);
+        return await _tournamentsContext.Tournaments.AnyAsync(predicate);
     }
 
     public async Task<IEnumerable<Tournament>> GetAllAsync()

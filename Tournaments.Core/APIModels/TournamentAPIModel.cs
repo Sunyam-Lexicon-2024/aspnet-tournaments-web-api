@@ -1,6 +1,6 @@
 namespace Tournaments.Core.APIModels;
 
-public class TournamentAPIModel(string title)
+public class TournamentAPIModel(string title) : IBaseAPIModel
 {
     public int Id { get; set; }
     public string Title { get; set; } = title;

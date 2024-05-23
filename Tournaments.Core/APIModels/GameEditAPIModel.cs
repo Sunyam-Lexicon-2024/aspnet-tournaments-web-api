@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+using Tournaments.Core.Interfaces;
 
 namespace Tournaments.Core.Entities;
 
-public class GameEditAPIModel(string title)
+public class GameEditAPIModel(string title) : IBaseAPIModel
 {
     public int Id { get; set; }
     [Required]

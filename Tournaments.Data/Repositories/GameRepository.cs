@@ -9,17 +9,17 @@ public class GameRepository(TournamentsContext tournamentsContext) : IRepository
 {
     private readonly TournamentsContext _tournamentsContext = tournamentsContext;
 
-    public async Task<Game?> AddAsync(Game tournament)
+    public async Task<Game?> AddAsync(Game gameToAdd)
     {
-        var tournamentExists = await AnyAsync(tournament.Id);
+        var tournamentExists = await AnyAsync(t => t.Id == gameToAdd.Id);
         if (tournamentExists) return null;
-        var createdGame = await _tournamentsContext.AddAsync(tournament);
+        var createdGame = await _tournamentsContext.AddAsync(gameToAdd);
         return createdGame.Entity;
     }
 
-    public async Task<bool> AnyAsync(int id)
+    public async Task<bool> AnyAsync(Expression<Func<Game, bool>> predicate)
     {
-        return await _tournamentsContext.Games.AnyAsync(g => g.Id == id);
+        return await _tournamentsContext.Games.AnyAsync(predicate);
     }
 
     public async Task<IEnumerable<Game>> GetAllAsync()
@@ -126,10 +126,10 @@ public class GameRepository(TournamentsContext tournamentsContext) : IRepository
 
             query = query
                 .Where(g =>
-                EF.Property<string>(g, property).Equals(filter.Value, 
+                EF.Property<string>(g, property).Equals(filter.Value,
                     StringComparison.OrdinalIgnoreCase))
                 .Where(g =>
-                EF.Property<string>(g, property).Contains(filter.Value, 
+                EF.Property<string>(g, property).Contains(filter.Value,
                     StringComparison.CurrentCultureIgnoreCase));
         }
 

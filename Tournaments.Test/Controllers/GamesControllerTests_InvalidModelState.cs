@@ -1,3 +1,5 @@
+using System.Linq.Expressions;
+
 namespace Tournaments.Test.Controllers;
 
 public class GamesControllerTests_InvalidModelState
@@ -31,6 +33,10 @@ public class GamesControllerTests_InvalidModelState
         // Arrange
         GameCreateAPIModel createModel = GamGameCreateAPIModelFactory
             .GenerateSingle();
+        _mockUnitOfWork.Setup(uow => uow.GameRepository
+            .AnyAsync(g => g.Title == createModel.Title &&
+                g.TournamentId == createModel.TournamentId))
+            .ReturnsAsync(false);
 
         // Act
         var response = await _gamesController.CreateGame(createModel);
@@ -46,8 +52,8 @@ public class GamesControllerTests_InvalidModelState
         GameEditAPIModel editModel = GameEditAPIModelFactory.GenerateSingle();
 
         _mockUnitOfWork.Setup(uow => uow.GameRepository
-            .AnyAsync(editModel.Id))
-            .ReturnsAsync(false);
+            .AnyAsync(g => g.Id == It.IsAny<Game>().Id))
+            .ReturnsAsync(true);
 
         // Act
         var response = await _gamesController.PutGame(editModel);
@@ -62,14 +68,19 @@ public class GamesControllerTests_InvalidModelState
         // Arrange
         Game gameToPatch = GameFactory.GenerateSingle();
 
-        _mockUnitOfWork.Setup(uow => uow.GameRepository.GetAsync(1))
+        _mockUnitOfWork.Setup(uow => uow.GameRepository.GetAsync(gameToPatch.Id))
             .ReturnsAsync(gameToPatch);
+
+        _mockUnitOfWork.Setup(uow => uow.GameRepository
+            .AnyAsync(It.IsAny<Expression<Func<Game, bool>>>()))
+            .ReturnsAsync((Expression<Func<Game, bool>> predicate) =>
+                predicate.Compile().Invoke(gameToPatch));
 
         JsonPatchDocument<Game> patchDocument = JsonPatchDocumentFactory
             .GenerateGamePatchDocument();
 
         // Act
-        var response = await _gamesController.PatchGame(1, null!);
+        var response = await _gamesController.PatchGame(gameToPatch.Id, null!);
 
         // Assert
         Assert.IsType<BadRequestObjectResult>(response.Result);
