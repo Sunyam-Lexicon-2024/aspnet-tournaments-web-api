@@ -11,12 +11,12 @@ namespace Tournaments.API.Controllers;
  */
 [Route("[controller]")]
 public class TournamentsController(
-    ILogger<Tournament> logger,
+    ILogger<TournamentsController> logger,
     IMapper mapper,
     IUnitOfWork unitOfWork) : BaseController(unitOfWork)
 {
 
-    private readonly ILogger<Tournament> _logger = logger;
+    private readonly ILogger<TournamentsController> _logger = logger;
     private readonly IMapper _mapper = mapper;
 
     /**

@@ -1,32 +1,57 @@
+using Serilog;
 [assembly: ApiController]
-var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers()
-                .AddNewtonsoftJson();
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
 
-builder.Services.AddLogging();
+Log.Information("Starting...");
 
-builder.Services.RegisterApplicationServices(builder.Configuration);
-                
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+try
 {
-    app.UseSwagger()
-        .UseSwaggerUI(options => {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
-        options.RoutePrefix = string.Empty;
-    });
+    var builder = WebApplication.CreateBuilder(args);
 
-    if (Environment.GetEnvironmentVariable("SEED_DATA") == "1")
+    builder.Services.AddControllers()
+                    .AddNewtonsoftJson();
+
+    builder.Services.AddLogging();
+
+    builder.Services.RegisterApplicationServices(builder.Configuration);
+
+    var app = builder.Build();
+
+    // Configure the HTTP request pipeline.
+    if (app.Environment.IsDevelopment())
     {
-        await app.SeedDataAsync();
+        app.UseSwagger()
+            .UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+                options.RoutePrefix = string.Empty;
+            });
+
+        if (Environment.GetEnvironmentVariable("SEED_DATA") == "1")
+        {
+            await app.SeedDataAsync();
+        }
     }
+
+    app.UseHttpsRedirection()
+       .UseAuthorization();
+
+    app.MapControllers();
+
+    await app.RunAsync();
+
+    Log.Information("Application stopped without errors");
+    return 0;
 }
-
-app.UseHttpsRedirection()
-   .UseAuthorization();
-
-app.MapControllers();
-app.Run();
+catch (Exception ex)
+{
+    Log.Fatal(ex, "An unhandled exception occurred during bootstrapping");
+    return 1;
+}
+finally
+{
+    Log.CloseAndFlush();
+}

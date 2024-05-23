@@ -11,11 +11,11 @@ Creates a new GamesController Instance
 */
 [Route("[controller]")]
 public class GamesController(
-    ILogger<Game> logger,
+    ILogger<GamesController> logger,
     IMapper mapper,
     IUnitOfWork unitOfWork) : BaseController(unitOfWork)
 {
-    private readonly ILogger<Game> _logger = logger;
+    private readonly ILogger<GamesController> _logger = logger;
     private readonly IMapper _mapper = mapper;
 
     /** 
