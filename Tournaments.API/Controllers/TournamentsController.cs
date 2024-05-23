@@ -1,5 +1,14 @@
 namespace Tournaments.API.Controllers;
 
+/**
+ <summary>
+ Creates a Tournaments Controller Instance
+ </summary>
+ <param name="logger"></param>
+ <param name="mapper"></param>
+ <param name="unitOfWork"></param>
+ <returns> A TournamentsController Instance </returns>
+ */
 [Route("[controller]")]
 public class TournamentsController(
     ILogger<Tournament> logger,
@@ -10,6 +19,16 @@ public class TournamentsController(
     private readonly ILogger<Tournament> _logger = logger;
     private readonly IMapper _mapper = mapper;
 
+    /**
+    <summary>
+    Creates a new tournament
+    </summary>
+    <returns> A list of newly created tournaments </returns>
+    <remarks>
+    Sample request: 
+        GET /Tournaments/1
+    </remarks>
+    */
     [HttpGet]
     [ProducesResponseType<IEnumerable<TournamentAPIModel>>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -46,7 +65,19 @@ public class TournamentsController(
             return NoContent();
         }
     }
-    // Get {Id}
+
+    /**
+    <summary>
+    Creates a new tournament
+    </summary>
+    <param name="tournamentId"></param>
+    <param name="queryParams"></param>
+    <returns> A list of newly created tournaments </returns>
+    <remarks>
+    Sample request: 
+        GET /Tournaments/1
+    </remarks>
+    */
     [HttpGet("{tournamentId}")]
     [ProducesResponseType<TournamentAPIModel>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -76,12 +107,21 @@ public class TournamentsController(
             return NotFound();
         }
     }
+
     /**
     <summary>
-    Creates a single tournament
+    Creates a new tournament
     </summary>
+    <param name="createModel"></param>
+    <returns> A list of newly created tournaments </returns>
+    <remarks>
+    Sample request: 
+        POST /Tournaments/collection {
+            "title": "Tournament-1",
+            "startTime": "2024-05-23T13:39:43.974Z",
+        }
+    </remarks>
     */
-    // Post
     [HttpPost]
     [ProducesResponseType<TournamentAPIModel>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -123,10 +163,16 @@ public class TournamentsController(
     <returns> A list of newly created tournaments </returns>
     <remarks>
     Sample request: 
-        POST /Tournaments/collection {
+        POST /Tournaments/collection 
+        [
+        {
             "Title": "Tournament-1",
             "startTime": "2024-05-23T13:39:43.974Z",
+        },
+        Title": "Tournament-1",
+            "startTime": "2024-05-23T13:39:43.974Z",
         }
+        ]
     </remarks>
     */
     [HttpPost]
@@ -175,7 +221,14 @@ public class TournamentsController(
         }
     }
 
-    // Put
+
+    /**
+ <summary>
+ Updates a Tournament
+ </summary>
+ <param name="editModel"></param>
+ <returns> The updated Tournament </returns>
+ */
     [HttpPut]
     [ProducesResponseType<TournamentAPIModel>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -211,6 +264,13 @@ public class TournamentsController(
         }
     }
 
+    /**
+<summary>
+Updates multiple Tournaments
+</summary>
+<param name="editModels"></param>
+<returns> A list of the updated Tournaments </returns>
+*/
     [HttpPut]
     [Route("collection")]
     [ProducesResponseType<TournamentAPIModel>(StatusCodes.Status200OK)]
@@ -270,7 +330,14 @@ public class TournamentsController(
         }
     }
 
-    // Patch {Id}
+    /**
+    <summary>
+    Partially updates the target Tournament
+    </summary>
+    <param name="tournamentId"></param>
+    <param name="patchDocument"></param>
+    <returns> The partilly updated Tournament </returns>
+    */
     [HttpPatch("{tournamentId}")]
     [ProducesResponseType<TournamentAPIModel>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -324,7 +391,13 @@ public class TournamentsController(
         return BadRequest("No Patch Document In Body");
     }
 
-    // Delete {Id}
+    /**
+    <summary>
+    Deletes the target Tournament
+    </summary>
+    <param name="tournamentId"></param>
+    <returns> The deleted Tournament </returns>
+    */
     [HttpDelete]
     [ProducesResponseType<TournamentAPIModel>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

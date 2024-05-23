@@ -1,5 +1,14 @@
 namespace Tournaments.API.Controllers;
 
+/** 
+<summary>
+Creates a new GamesController Instance
+</summary>
+<param name="logger"></param>
+<param name="mapper"></param>
+<param name="unitOfWork"></param>
+<returns> A new GamesController Instance </returns>
+*/
 [Route("[controller]")]
 public class GamesController(
     ILogger<Game> logger,
@@ -9,6 +18,12 @@ public class GamesController(
     private readonly ILogger<Game> _logger = logger;
     private readonly IMapper _mapper = mapper;
 
+    /** 
+    <summary>
+    Returns all Games
+    </summary>
+    <returns> A list of all Games </returns>
+    */
     [HttpGet]
     [ProducesResponseType<IEnumerable<GameAPIModel>>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -45,7 +60,18 @@ public class GamesController(
             return NoContent();
         }
     }
-    // Get {Id}
+
+    /** 
+    <summary>
+    Gets a specific game by ID
+    </summary>
+    <param name="gameId"></param>
+    <returns> A Game matching the given ID </returns>
+    <remarks>
+    Sample request: 
+            GET /Games/1
+    </remarks>
+    */
     [HttpGet("{gameId}")]
     [ProducesResponseType<GameAPIModel>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -61,7 +87,24 @@ public class GamesController(
             return NotFound();
         }
     }
-    // Post
+
+    /** 
+    <summary>
+    Creates a new Game
+    </summary>
+    <param name="createModel"></param>
+    <returns> The newly created Game </returns>
+    <remarks>
+    Sample request: 
+            POST /Games {
+            {
+                "id": 1,
+                "title": "New Game"
+                "tournamentId": 2
+                "startTime": "2024-05-23T13:39:43.974Z",
+            }
+    </remarks>
+    */
     [HttpPost]
     [ProducesResponseType<GameAPIModel>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -92,7 +135,31 @@ public class GamesController(
         }
     }
 
-    // Post
+    /** 
+    <summary>
+    Creates multiple new Games
+    </summary>
+    <param name="createModels"></param>
+    <returns> A list of the newly created Games </returns>
+    <remarks>
+    Sample request: 
+            POST /Games 
+            [
+            {
+                "id": 1,
+                "title": "New Game 1"
+                "tournamentId": 2
+                "startTime": "2024-05-23T13:39:43.974Z",
+            },
+            {
+                "id": 1,
+                "title": "New Game 2"
+                "tournamentId": 2
+                "startTime": "2024-05-23T13:39:43.974Z",
+            },
+            ]
+    </remarks>
+    */
     [HttpPost]
     [Route("collection")]
     [ProducesResponseType<IEnumerable<GameAPIModel>>(StatusCodes.Status200OK)]
@@ -144,7 +211,23 @@ public class GamesController(
         }
     }
 
-    // Put
+    /** 
+    <summary>
+    Updates a specific Game
+    </summary>
+    <param name="editModel"></param>
+    <returns> The newly updated Game </returns>
+    <remarks>
+    Sample request: 
+            PUT /Games
+            {
+                "id": 1,
+                "title": "Updated Game"
+                "tournamentId": 2
+                "startTime": "2024-05-23T13:39:43.974Z",
+            }
+    </remarks>
+    */
     [HttpPut]
     [ProducesResponseType<GameAPIModel>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -179,6 +262,31 @@ public class GamesController(
         }
     }
 
+    /** 
+    <summary>
+    Updates multiple Games
+    </summary>
+    <param name="editModels"></param>
+    <returns> The newly updated Games </returns>
+    <remarks>
+    Sample request: 
+            PUT /Games
+            [
+            {
+                "id": 1,
+                "title": "Updated Game"
+                "tournamentId": 2
+                "startTime": "2024-05-23T13:39:43.974Z",
+            },
+            {
+                "id": 2,
+                "title": "Updated Game 2"
+                "tournamentId": 2
+                "startTime": "2024-05-24T13:39:43.974Z",
+            }
+            ]
+    </remarks>
+    */
     [HttpPut]
     [Route("collection")]
     [ProducesResponseType<IEnumerable<GameAPIModel>>(StatusCodes.Status200OK)]
@@ -240,7 +348,18 @@ public class GamesController(
         }
     }
 
-    // Patch {Id}
+    /** 
+    <summary>
+    Partially updates multiple Game
+    </summary>
+    <param name="gameId"></param>
+    <param name="patchDocument"></param>
+    <returns> The newly partially updated Game </returns>
+    <remarks>
+    Sample request: 
+            PATCH /Games/1
+    </remarks>
+    */
     [HttpPatch("{gameId}")]
     [ProducesResponseType<GameAPIModel>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -292,7 +411,18 @@ public class GamesController(
         }
         return BadRequest("No Patch Document In Body");
     }
-    // Delete {Id}
+
+    /** 
+    <summary>
+    Deletes a Game
+    </summary>
+    <param name="gameId"></param>
+    <returns> The newly deleted Games </returns>
+    <remarks>
+    Sample request: 
+            DELETE /Games/1
+    </remarks>
+    */
     [HttpDelete("{gameId}")]
     [ProducesResponseType<GameAPIModel>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
