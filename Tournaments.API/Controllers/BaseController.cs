@@ -1,8 +1,6 @@
-using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Tournaments.API.Controllers;
-
 public abstract class BaseController(
     IUnitOfWork unitOfWork) : Controller
 {

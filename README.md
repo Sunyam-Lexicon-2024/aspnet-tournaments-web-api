@@ -20,6 +20,8 @@ editing information about Tournaments and their corresponding Games.
 - [x] Pagination
 - [x] Seed Data
 - [x] xUnit Tests
+- [x] Logging
+- [x] Authentication (OAuth2)
 
 ## Testing/Development
 ```
