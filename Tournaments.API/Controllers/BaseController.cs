@@ -40,6 +40,40 @@ public abstract class BaseController(
         return paginationHeaders;
     }
 
+    protected void LogError(Exception exception, IBaseAPIModel apiModel, ILogger logger)
+    {
+        var errorDetails = JsonSerializer.Serialize(
+            new
+            {
+                message = "Error processing item",
+                model = apiModel,
+                exception
+            });
+        logger.LogError("{Message}", errorDetails);
+    }
+    protected void LogError(Exception exception, IEnumerable<IBaseAPIModel> apiModels, ILogger logger)
+    {
+        var errorDetails = JsonSerializer.Serialize(
+          new
+          {
+              message = "Error processing multiple items",
+              models = apiModels,
+              exception
+          });
+        logger.LogError("{Message}", errorDetails);
+    }
+    protected void LogError(Exception exception, int id, ILogger logger)
+    {
+        var errorDetails = JsonSerializer.Serialize(
+           new
+           {
+               message = "Error processing ID",
+               id,
+               exception
+           });
+        logger.LogError("{Message}", errorDetails);
+    }
+
     protected override void Dispose(bool disposing)
     {
         _unitOfWork.Dispose();

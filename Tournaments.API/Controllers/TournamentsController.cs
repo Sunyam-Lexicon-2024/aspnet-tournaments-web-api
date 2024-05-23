@@ -10,8 +10,9 @@ public class TournamentsController(
     private readonly ILogger<Tournament> _logger = logger;
     private readonly IMapper _mapper = mapper;
 
-    // Get
     [HttpGet]
+    [ProducesResponseType<IEnumerable<TournamentAPIModel>>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult<IEnumerable<TournamentAPIModel>>> GetTournaments(
         [FromQuery] QueryParameters? queryParameters = null)
     {
@@ -47,6 +48,8 @@ public class TournamentsController(
     }
     // Get {Id}
     [HttpGet("{tournamentId}")]
+    [ProducesResponseType<TournamentAPIModel>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<TournamentAPIModel>> GetTournamentById(
         int tournamentId,
         [FromQuery] QueryParameters? queryParams = null!)
@@ -73,11 +76,23 @@ public class TournamentsController(
             return NotFound();
         }
     }
+    /**
+    <summary>
+    Creates a single tournament
+    </summary>
+    */
     // Post
     [HttpPost]
+    [ProducesResponseType<TournamentAPIModel>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<TournamentCreateAPIModel>> CreateTournament(
         TournamentCreateAPIModel createModel)
     {
+        if (!await TournamentExists(t => t.Title == createModel.Title))
+        {
+            return BadRequest($"Tournament with title {createModel.Title} already exists");
+        }
         if (!ModelState.IsValid)
         {
             return BadRequest(ErrorResponseBody(ModelState));
@@ -95,15 +110,77 @@ public class TournamentsController(
         catch (DbUpdateException ex)
         {
             // TBD append error details here
-            _logger.LogError("{Message}",
-                "Could not create new tournament" +
-                $"{JsonSerializer.Serialize(createModel)}:" +
-                ex.Message);
+            LogError(ex, createModel, _logger);
             return StatusCode(500);
         }
     }
+
+    /**
+    <summary>
+    Creates multiple tournaments at once
+    </summary>
+    <param name="createModels"></param>
+    <returns> A list of newly created tournaments </returns>
+    <remarks>
+    Sample request: 
+        POST /Tournaments/collection {
+            "Title": "Tournament-1",
+            "startTime": "2024-05-23T13:39:43.974Z",
+        }
+    </remarks>
+    */
+    [HttpPost]
+    [Route("collection")]
+    [ProducesResponseType<IEnumerable<TournamentAPIModel>>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<IEnumerable<TournamentAPIModel>>> CreateTournaments(
+        IEnumerable<TournamentCreateAPIModel> createModels)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ErrorResponseBody(ModelState));
+        }
+
+        List<GameAPIModel> apiModels = [];
+        CancellationTokenSource cancellationTokenSource = new();
+
+        try
+        {
+            await Task.Run(async () =>
+            {
+                foreach (var cm in createModels)
+                {
+                    if (cancellationTokenSource.Token.IsCancellationRequested)
+                    {
+                        break;
+                    }
+                    var tournamentToCreate = _mapper.Map<Tournament>(cm);
+                    var createdTournament = await _unitOfWork.TournamentRepository.AddAsync(tournamentToCreate);
+                    if (createdTournament is null)
+                    {
+                        cancellationTokenSource.Cancel();
+                        break;
+                    }
+                    apiModels.Add(_mapper.Map<GameAPIModel>(createdTournament));
+                }
+            }, cancellationTokenSource.Token);
+            await _unitOfWork.CompleteAsync();
+            return Ok(apiModels);
+        }
+        catch (DbUpdateException ex)
+        {
+            LogError(ex, apiModels, _logger);
+            return StatusCode(500);
+        }
+    }
+
     // Put
     [HttpPut]
+    [ProducesResponseType<TournamentAPIModel>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<TournamentAPIModel>> PutTournament(
             TournamentEditAPIModel editModel)
     {
@@ -112,7 +189,7 @@ public class TournamentsController(
             return BadRequest(ErrorResponseBody(ModelState));
         }
 
-        if (!await TournamentExists(editModel.Id))
+        if (!await TournamentExists(t => t.Id == editModel.Id))
         {
             return NotFound();
         }
@@ -129,17 +206,84 @@ public class TournamentsController(
         catch (DbUpdateException ex)
         {
             // TBD append error details here
-            _logger.LogError("{Message}",
-                $"Could not create update tournament {editModel.Id}: " + ex.Message);
+            LogError(ex, editModel, _logger);
             return StatusCode(500);
         }
     }
+
+    [HttpPut]
+    [Route("collection")]
+    [ProducesResponseType<TournamentAPIModel>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<IEnumerable<TournamentAPIModel>>> PutTournaments(
+        IEnumerable<TournamentEditAPIModel> editModels)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ErrorResponseBody(ModelState));
+        }
+
+        List<TournamentAPIModel> apiModels = [];
+        CancellationTokenSource cancellationTokenSource = new();
+
+        try
+        {
+            await Task.Run(async () =>
+            {
+                foreach (var em in editModels)
+                {
+                    if (cancellationTokenSource.Token.IsCancellationRequested)
+                    {
+                        break;
+                    }
+                    if (!await TournamentExists(t => t.Id == em.Id))
+                    {
+                        // activte canellationToken here
+                        cancellationTokenSource.Cancel();
+                        break;
+                    }
+                    var tournamentToUpdate = _mapper.Map<Tournament>(em);
+                    var updatedTournament = await _unitOfWork.TournamentRepository
+                        .UpdateAsync(tournamentToUpdate);
+                    if (updatedTournament is null)
+                    {
+                        cancellationTokenSource.Cancel();
+                        break;
+                    }
+                    apiModels.Add(_mapper.Map<TournamentAPIModel>(updatedTournament));
+                }
+            }, cancellationTokenSource.Token);
+            await _unitOfWork.CompleteAsync();
+            return Ok(apiModels);
+        }
+        catch (OperationCanceledException ex)
+        {
+            LogError(ex, apiModels, _logger);
+            return BadRequest("Invalid attribute settings on one or more input objects found.");
+        }
+        catch (DbUpdateException ex)
+        {
+            // TBD append error details here
+            LogError(ex, editModels, _logger);
+            return StatusCode(500);
+        }
+    }
+
     // Patch {Id}
     [HttpPatch("{tournamentId}")]
+    [ProducesResponseType<TournamentAPIModel>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<TournamentAPIModel>> PatchTournament(
         int tournamentId,
         [FromBody] JsonPatchDocument<Tournament> patchDocument)
     {
+        if (!await TournamentExists(t => t.Id == tournamentId))
+        {
+            return NotFound();
+        }
         if (patchDocument is not null)
         {
             var tournamentToPatch = await _unitOfWork.TournamentRepository
@@ -147,16 +291,29 @@ public class TournamentsController(
 
             if (tournamentToPatch is not null)
             {
-                await Task.Run(() => patchDocument.ApplyTo(tournamentToPatch, ModelState));
-                await _unitOfWork.CompleteAsync();
+                try
+                {
+                    await Task.Run(() => patchDocument.ApplyTo(tournamentToPatch, ModelState));
+                    await _unitOfWork.CompleteAsync();
 
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ErrorResponseBody(ModelState));
+                    if (!ModelState.IsValid)
+                    {
+                        return BadRequest(ErrorResponseBody(ModelState));
+                    }
+                    else
+                    {
+                        return Ok(_mapper.Map<TournamentAPIModel>(tournamentToPatch));
+                    }
                 }
-                else
+                catch (JsonPatchException ex)
                 {
-                    return Ok(_mapper.Map<TournamentAPIModel>(tournamentToPatch));
+                    LogError(ex, tournamentId, _logger);
+                    return BadRequest("Invalid Json Patch Document");
+                }
+                catch (DbUpdateException ex)
+                {
+                    LogError(ex, tournamentId, _logger);
+                    return StatusCode(500);
                 }
             }
             else
@@ -164,29 +321,40 @@ public class TournamentsController(
                 return NotFound();
             }
         }
-
         return BadRequest("No Patch Document In Body");
     }
 
     // Delete {Id}
     [HttpDelete]
+    [ProducesResponseType<TournamentAPIModel>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<TournamentAPIModel>> DeleteTournament(int tournamentId)
     {
-        if (!await TournamentExists(tournamentId))
+        if (!await TournamentExists(t => t.Id == tournamentId))
         {
             return NotFound();
         }
         else
         {
-            var deletedTournament = await _unitOfWork.TournamentRepository
-                .RemoveAsync(tournamentId);
-            var dto = _mapper.Map<TournamentAPIModel>(deletedTournament);
-            return Ok(dto);
+            try
+            {
+                var deletedTournament = await _unitOfWork.TournamentRepository
+                    .RemoveAsync(tournamentId);
+                await _unitOfWork.CompleteAsync();
+                var apiModel = await Task.Run(() => _mapper.Map<TournamentAPIModel>(deletedTournament));
+                return Ok(apiModel);
+            }
+            catch (DbUpdateException ex)
+            {
+                LogError(ex, tournamentId, _logger);
+                return StatusCode(500);
+            }
         }
     }
 
-    private async Task<bool> TournamentExists(int tournamentId)
+    private async Task<bool> TournamentExists(Expression<Func<Tournament, bool>> predicate)
     {
-        return await _unitOfWork.TournamentRepository.AnyAsync(tournamentId);
+        return await _unitOfWork.TournamentRepository.AnyAsync(predicate);
     }
 }

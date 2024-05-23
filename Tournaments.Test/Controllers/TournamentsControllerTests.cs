@@ -122,6 +122,11 @@ public class TournamentsControllerTests
         _mockUnitOfWork.Setup(uow => uow.TournamentRepository.AddAsync(createdTournament))
             .ReturnsAsync(createdTournament);
 
+        _mockUnitOfWork.Setup(uow => uow.TournamentRepository
+            .AnyAsync(It.IsAny<Expression<Func<Tournament, bool>>>()))
+            .ReturnsAsync((Expression<Func<Tournament, bool>> predicate) =>
+                predicate.Compile().Invoke(createdTournament));
+
         // Act
         var response = await _tournamentsController.CreateTournament(createModel);
 
@@ -137,8 +142,9 @@ public class TournamentsControllerTests
         Tournament tournamentToEdit = TournamentFactory.GenerateSingle();
 
         _mockUnitOfWork.Setup(uow => uow.TournamentRepository
-            .AnyAsync(editModel.Id))
-            .ReturnsAsync(true);
+            .AnyAsync(It.IsAny<Expression<Func<Tournament, bool>>>()))
+            .ReturnsAsync((Expression<Func<Tournament, bool>> predicate) =>
+                predicate.Compile().Invoke(tournamentToEdit));
 
         _mockUnitOfWork.Setup(uow => uow.TournamentRepository.UpdateAsync(tournamentToEdit))
             .ReturnsAsync(tournamentToEdit);
@@ -158,8 +164,8 @@ public class TournamentsControllerTests
         Tournament tournamentToEdit = TournamentFactory.GenerateSingle();
 
         _mockUnitOfWork.Setup(uow => uow.TournamentRepository
-            .AnyAsync(editModel.Id))
-            .ReturnsAsync(false);
+           .AnyAsync(It.IsAny<Expression<Func<Tournament, bool>>>()))
+           .ReturnsAsync((Expression<Func<Tournament, bool>> predicate) => false);
 
         _mockUnitOfWork.Setup(uow => uow.TournamentRepository.UpdateAsync(tournamentToEdit))
             .ReturnsAsync(tournamentToEdit);
@@ -180,6 +186,11 @@ public class TournamentsControllerTests
         _mockUnitOfWork.Setup(uow => uow.TournamentRepository.GetAsync(1))
             .ReturnsAsync(tournamentToPatch);
 
+        _mockUnitOfWork.Setup(uow => uow.TournamentRepository
+            .AnyAsync(It.IsAny<Expression<Func<Tournament, bool>>>()))
+            .ReturnsAsync((Expression<Func<Tournament, bool>> predicate) =>
+                predicate.Compile().Invoke(tournamentToPatch));
+
         JsonPatchDocument<Tournament> patchDocument = JsonPatchDocumentFactory
             .GenerateTournamentPatchDocument();
 
@@ -197,6 +208,13 @@ public class TournamentsControllerTests
         _mockUnitOfWork.Setup(uow => uow.TournamentRepository.GetAsync(1))
             .ReturnsAsync(() => null);
 
+        var tournamentToPatch = TournamentFactory.GenerateSingle();
+
+        _mockUnitOfWork.Setup(uow => uow.TournamentRepository
+            .AnyAsync(It.IsAny<Expression<Func<Tournament, bool>>>()))
+            .ReturnsAsync((Expression<Func<Tournament, bool>> predicate) =>
+                predicate.Compile().Invoke(tournamentToPatch));
+
         JsonPatchDocument<Tournament> patchDocument = JsonPatchDocumentFactory
            .GenerateTournamentPatchDocument();
 
@@ -206,7 +224,7 @@ public class TournamentsControllerTests
         // Assert
         Assert.IsType<NotFoundResult>(response.Result);
     }
-    
+
     [Fact]
     public async Task DeleteTournament_Returns_OkObjectResult_If_Entity_Is_Deleted()
     {
@@ -214,8 +232,9 @@ public class TournamentsControllerTests
         Tournament deletedTournament = TournamentFactory.GenerateSingle();
 
         _mockUnitOfWork.Setup(uow => uow.TournamentRepository
-            .AnyAsync(deletedTournament.Id))
-            .ReturnsAsync(true);
+            .AnyAsync(It.IsAny<Expression<Func<Tournament, bool>>>()))
+            .ReturnsAsync((Expression<Func<Tournament, bool>> predicate) =>
+                predicate.Compile().Invoke(deletedTournament));
 
         _mockUnitOfWork.Setup(uow => uow.TournamentRepository.RemoveAsync(1))
             .ReturnsAsync(deletedTournament);
@@ -234,8 +253,8 @@ public class TournamentsControllerTests
         Tournament deletedTournament = TournamentFactory.GenerateSingle();
 
         _mockUnitOfWork.Setup(uow => uow.TournamentRepository
-            .AnyAsync(deletedTournament.Id))
-            .ReturnsAsync(false);
+            .AnyAsync(It.IsAny<Expression<Func<Tournament, bool>>>()))
+            .ReturnsAsync((Expression<Func<Tournament, bool>> predicate) => false);
 
         _mockUnitOfWork.Setup(uow => uow.TournamentRepository
             .RemoveAsync(deletedTournament.Id))

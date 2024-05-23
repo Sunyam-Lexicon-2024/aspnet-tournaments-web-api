@@ -1,4 +1,4 @@
-namespace Tournaments.Core.Entities.Interfaces;
+namespace Tournaments.Core.Interfaces;
 
 public interface IBaseEntity {
     public int Id { get; set;}

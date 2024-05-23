@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Tournaments.Core.Entities;
 
-public class TournamentEditAPIModel(string title)
+public class TournamentEditAPIModel(string title) : IBaseAPIModel
 {
     public int Id { get; set; }
     [Required]

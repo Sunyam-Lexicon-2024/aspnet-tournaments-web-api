@@ -8,8 +8,10 @@ public class GamesController(
 {
     private readonly ILogger<Game> _logger = logger;
     private readonly IMapper _mapper = mapper;
-    // Get
+
     [HttpGet]
+    [ProducesResponseType<IEnumerable<GameAPIModel>>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult<IEnumerable<GameAPIModel>>> GetGames(
         [FromQuery] QueryParameters? queryParameters = null)
     {
@@ -45,6 +47,8 @@ public class GamesController(
     }
     // Get {Id}
     [HttpGet("{gameId}")]
+    [ProducesResponseType<GameAPIModel>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<GameAPIModel>> GetGameById(int gameId)
     {
         var game = await _unitOfWork.GameRepository.GetAsync(gameId);
@@ -59,35 +63,93 @@ public class GamesController(
     }
     // Post
     [HttpPost]
-    public async Task<ActionResult<GameCreateAPIModel>> CreateGame(
+    [ProducesResponseType<GameAPIModel>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<GameAPIModel>> CreateGame(
         GameCreateAPIModel createModel)
+    {
+        if (!await GameExists(g => g.Title == createModel.Title &&
+            g.TournamentId == createModel.TournamentId))
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ErrorResponseBody(ModelState));
+            }
+
+        var gameToCreate = await Task.Run(() => _mapper.Map<Game>(createModel));
+
+        try
+        {
+            var createdGame = await _unitOfWork.GameRepository.AddAsync(gameToCreate);
+            await _unitOfWork.CompleteAsync();
+            var apiModel = await Task.Run(() => _mapper.Map<GameAPIModel>(createdGame));
+            return Ok(apiModel);
+        }
+        catch (DbUpdateException ex)
+        {
+            LogError(ex, createModel, _logger);
+            return StatusCode(500);
+        }
+    }
+
+    // Post
+    [HttpPost]
+    [Route("collection")]
+    [ProducesResponseType<IEnumerable<GameAPIModel>>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<IEnumerable<GameAPIModel>>> CreateGames(
+        IEnumerable<GameCreateAPIModel> createModels)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ErrorResponseBody(ModelState));
         }
 
-        var gameToCreate = await Task.Run(() => _mapper
-            .Map<Game>(createModel));
+        List<GameAPIModel> apiModels = [];
+        CancellationTokenSource cancellationTokenSource = new();
 
         try
         {
-            await _unitOfWork.GameRepository.AddAsync(gameToCreate);
+            await Task.Run(async () =>
+            {
+                foreach (var cm in createModels)
+                {
+                    if (cancellationTokenSource.Token.IsCancellationRequested)
+                    {
+                        break;
+                    }
+                    var gameToCreate = _mapper.Map<Game>(cm);
+                    var createdGame = await _unitOfWork.GameRepository.AddAsync(gameToCreate);
+                    if (createdGame is null)
+                    {
+                        cancellationTokenSource.Cancel();
+                        break;
+                    }
+                    apiModels.Add(_mapper.Map<GameAPIModel>(createdGame));
+                }
+            }, cancellationTokenSource.Token);
             await _unitOfWork.CompleteAsync();
-            return Ok(createModel);
+            return Ok(apiModels);
+        }
+        catch (OperationCanceledException ex)
+        {
+            LogError(ex, apiModels, _logger);
+            return BadRequest("Invalid attribute settings on one or more input objects found.");
         }
         catch (DbUpdateException ex)
         {
-            // TBD append error details here
-            _logger.LogError("{Message}",
-                "Could not create new game" +
-                $"{JsonSerializer.Serialize(createModel)}:" +
-                ex.Message);
+            LogError(ex, apiModels, _logger);
             return StatusCode(500);
         }
     }
+
     // Put
     [HttpPut]
+    [ProducesResponseType<GameAPIModel>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<GameAPIModel>> PutGame(GameEditAPIModel editModel)
     {
         if (!ModelState.IsValid)
@@ -95,7 +157,7 @@ public class GamesController(
             return BadRequest(ErrorResponseBody(ModelState));
         }
 
-        if (!await GameExists(editModel.Id))
+        if (!await GameExists(g => g.Id == editModel.Id))
         {
             return NotFound();
         }
@@ -112,33 +174,115 @@ public class GamesController(
         catch (DbUpdateException ex)
         {
             // TBD append error details here
-            _logger.LogError("{Message}",
-                $"Could not update game {editModel.Id}: " + ex.Message);
+            LogError(ex, editModel, _logger);
+            return StatusCode(500);
+        }
+    }
+
+    [HttpPut]
+    [Route("collection")]
+    [ProducesResponseType<IEnumerable<GameAPIModel>>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<IEnumerable<GameAPIModel>>> PutGames(
+        IEnumerable<GameEditAPIModel> editModels)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ErrorResponseBody(ModelState));
+        }
+
+        List<GameAPIModel> apiModels = [];
+        CancellationTokenSource cancellationTokenSource = new();
+
+        try
+        {
+            await Task.Run(async () =>
+            {
+                foreach (var em in editModels)
+                {
+                    if (cancellationTokenSource.Token.IsCancellationRequested)
+                    {
+                        break;
+                    }
+                    if (!await GameExists(g => g.Id == em.Id))
+                    {
+                        // activte canellationToken here
+                        cancellationTokenSource.Cancel();
+                        break;
+                    }
+                    var gameToUpdate = _mapper.Map<Game>(em);
+                    var updatedGame = await _unitOfWork.GameRepository
+                        .UpdateAsync(gameToUpdate);
+                    if (updatedGame is null)
+                    {
+                        cancellationTokenSource.Cancel();
+                        break;
+                    }
+                    apiModels.Add(_mapper.Map<GameAPIModel>(updatedGame));
+                }
+            }, cancellationTokenSource.Token);
+
+            await _unitOfWork.CompleteAsync();
+            return Ok(apiModels);
+        }
+        catch (OperationCanceledException ex)
+        {
+            LogError(ex, apiModels, _logger);
+            return BadRequest("Invalid attribute settings on one or more input objects found.");
+        }
+        catch (DbUpdateException ex)
+        {
+            // TBD append error details here
+            LogError(ex, editModels, _logger);
             return StatusCode(500);
         }
     }
 
     // Patch {Id}
     [HttpPatch("{gameId}")]
+    [ProducesResponseType<GameAPIModel>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<GameAPIModel>> PatchGame(
         int gameId,
         [FromBody] JsonPatchDocument<Game> patchDocument)
     {
+        if (!await GameExists(g => g.Id == gameId))
+        {
+            return NotFound();
+        }
         if (patchDocument is not null)
         {
             var gameToPatch = await _unitOfWork.GameRepository.GetAsync(gameId);
             if (gameToPatch is not null)
             {
-                await Task.Run(() => patchDocument.ApplyTo(gameToPatch, ModelState));
-                await _unitOfWork.CompleteAsync();
+                try
+                {
+                    await Task.Run(() => patchDocument.ApplyTo(gameToPatch, ModelState));
+                    await _unitOfWork.CompleteAsync();
 
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ErrorResponseBody(ModelState));
+                    if (!ModelState.IsValid)
+                    {
+                        return BadRequest(ErrorResponseBody(ModelState));
+                    }
+                    else
+                    {
+                        return Ok(_mapper.Map<GameAPIModel>(gameToPatch));
+                    }
                 }
-                else
+
+                catch (JsonPatchException ex)
                 {
-                    return Ok(_mapper.Map<GameAPIModel>(gameToPatch));
+                    LogError(ex, gameId, _logger);
+                    return BadRequest("Invalid Json Patch Document");
+                }
+                catch (DbUpdateException ex)
+                {
+                    LogError(ex, gameId, _logger);
+                    return StatusCode(500);
                 }
             }
             else
@@ -150,9 +294,12 @@ public class GamesController(
     }
     // Delete {Id}
     [HttpDelete("{gameId}")]
+    [ProducesResponseType<GameAPIModel>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<GameAPIModel>> DeleteGame(int gameId)
     {
-        if (!await GameExists(gameId))
+        if (!await GameExists(g => g.Id == gameId))
         {
             return NotFound();
         }
@@ -163,21 +310,20 @@ public class GamesController(
                 var deletedGame = await _unitOfWork.GameRepository
                     .RemoveAsync(gameId);
                 await _unitOfWork.CompleteAsync();
-                var apiModel = _mapper.Map<GameAPIModel>(deletedGame);
+                var apiModel = await Task.Run(() => _mapper.Map<GameAPIModel>(deletedGame));
                 return Ok(apiModel);
             }
             catch (DbUpdateException ex)
             {
                 // TBD append error details here
-                _logger.LogError("{Message}",
-                    $"Could not delete game {gameId}: " + ex.Message);
+                LogError(ex, gameId, _logger);
                 return StatusCode(500);
             }
         }
     }
 
-    private async Task<bool> GameExists(int gameId)
+    private async Task<bool> GameExists(Expression<Func<Game, bool>> predicate)
     {
-        return await _unitOfWork.GameRepository.AnyAsync(gameId);
+        return await _unitOfWork.GameRepository.AnyAsync(predicate);
     }
 }

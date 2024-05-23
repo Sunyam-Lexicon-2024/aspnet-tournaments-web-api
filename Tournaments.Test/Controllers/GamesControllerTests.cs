@@ -28,7 +28,8 @@ public class GamesControllerTests
     public async Task GetGames_Returns_OkObjectResult_When_Entities_Exist()
     {
         // Arrange
-        _mockUnitOfWork.Setup(uow => uow.GameRepository.GetAllAsync())
+        _mockUnitOfWork.Setup(uow => uow.GameRepository
+            .GetAllAsync())
             .ReturnsAsync(_mockGames);
 
         // Act
@@ -42,7 +43,8 @@ public class GamesControllerTests
     public async Task GetGames_Returns_All_Entities_When_Entities_Exist()
     {
         // Arrange
-        _mockUnitOfWork.Setup(uow => uow.GameRepository.GetAllAsync())
+        _mockUnitOfWork.Setup(uow => uow.GameRepository
+            .GetAllAsync())
             .ReturnsAsync(_mockGames);
 
         // Act
@@ -58,7 +60,8 @@ public class GamesControllerTests
     public async Task GetGames_Returns_NoContentResult_When_No_Entities_Exist()
     {
         // Arrange
-        _mockUnitOfWork.Setup(uow => uow.GameRepository.GetAllAsync())
+        _mockUnitOfWork.Setup(uow => uow.GameRepository
+            .GetAllAsync())
             .ReturnsAsync([]);
 
         // Act
@@ -72,7 +75,8 @@ public class GamesControllerTests
     public async Task GetGameById_Returns_OkObjectResult_When_Entity_Exists()
     {
         // Arrange
-        _mockUnitOfWork.Setup(uow => uow.GameRepository.GetAsync(1))
+        _mockUnitOfWork.Setup(uow => uow.GameRepository
+            .GetAsync(1))
             .ReturnsAsync(_mockGames[0]);
 
         // Act
@@ -86,7 +90,8 @@ public class GamesControllerTests
     public async Task GetGameById_Returns_Entity_When_Entity_Exists()
     {
         // Arrange
-        _mockUnitOfWork.Setup(uow => uow.GameRepository.GetAsync(1))
+        _mockUnitOfWork.Setup(uow => uow.GameRepository
+            .GetAsync(1))
             .ReturnsAsync(_mockGames[0]);
 
         // Act
@@ -102,7 +107,8 @@ public class GamesControllerTests
     public async Task GetGameById_Returns_NotFoundResult_When_Entity_Does_Not_Exist()
     {
         // Arrange
-        _mockUnitOfWork.Setup(uow => uow.GameRepository.GetAsync(3))
+        _mockUnitOfWork.Setup(uow => uow.GameRepository
+            .GetAsync(3))
             .ReturnsAsync(() => null);
 
         // Act
@@ -120,7 +126,12 @@ public class GamesControllerTests
             .GenerateSingle();
         Game createdGame = GameFactory.GenerateSingle();
 
-        _mockUnitOfWork.Setup(uow => uow.GameRepository.AddAsync(createdGame))
+        _mockUnitOfWork.Setup(uow => uow.GameRepository
+            .AnyAsync(It.IsAny<Expression<Func<Game, bool>>>()))
+            .ReturnsAsync((Expression<Func<Game, bool>> predicate) => false);
+
+        _mockUnitOfWork.Setup(uow => uow.GameRepository
+            .AddAsync(createdGame))
             .ReturnsAsync(createdGame);
 
         // Act
@@ -130,20 +141,47 @@ public class GamesControllerTests
         Assert.IsType<OkObjectResult>(response.Result);
     }
 
+
     [Fact]
-    public async Task CreateGame_Returns_BadRequestObjectResult_If_ModelState_Is_Invalid()
+    public async Task CreateGames_Returns_OkObjectResult_If_Entity_Is_Created()
     {
         // Arrange
-        GameCreateAPIModel createModel = GamGameCreateAPIModelFactory
-            .GenerateSingle();
+        List<GameCreateAPIModel> createModels = GamGameCreateAPIModelFactory.Generate(5);
+        _mockUnitOfWork.Setup(uow => uow.GameRepository
+            .AddAsync(It.IsAny<Game>()))
+            .ReturnsAsync((Game g) => g);
 
-        _gamesController.ModelState.AddModelError("test", "test");
+        _mockUnitOfWork.Setup(uow => uow.GameRepository
+            .AnyAsync(It.IsAny<Expression<Func<Game, bool>>>()))
+            .ReturnsAsync((Expression<Func<Game, bool>> predicate) => false);
 
         // Act
-        var response = await _gamesController.CreateGame(createModel);
+        var response = await _gamesController.CreateGames(createModels);
 
         // Assert
-        Assert.IsType<BadRequestObjectResult>(response.Result);
+        Assert.IsType<OkObjectResult>(response.Result);
+    }
+
+    [Fact]
+    public async Task CreateGames_Returns_All_Created_Entities_If_Entity_Is_Created()
+    {
+        // Arrange
+        List<GameCreateAPIModel> createModels = GamGameCreateAPIModelFactory.Generate(5);
+        _mockUnitOfWork.Setup(uow => uow.GameRepository
+            .AddAsync(It.IsAny<Game>()))
+            .ReturnsAsync((Game g) => g);
+
+        _mockUnitOfWork.Setup(uow => uow.GameRepository
+            .AnyAsync(It.IsAny<Expression<Func<Game, bool>>>()))
+            .ReturnsAsync((Expression<Func<Game, bool>> predicate) => false);
+
+        // Act
+        var result = await _gamesController.CreateGames(createModels);
+        var okResult = (OkObjectResult)result.Result!;
+        var responseItems = (IEnumerable<GameAPIModel>)okResult.Value!;
+
+        // Assert
+        Assert.Equal(createModels.Count, responseItems.Count());
     }
 
     [Fact]
@@ -154,8 +192,8 @@ public class GamesControllerTests
         Game gameToEdit = GameFactory.GenerateSingle();
 
         _mockUnitOfWork.Setup(uow => uow.GameRepository
-            .AnyAsync(editModel.Id))
-            .ReturnsAsync(true);
+           .AnyAsync(It.IsAny<Expression<Func<Game, bool>>>()))
+           .ReturnsAsync((Expression<Func<Game, bool>> predicate) => true);
 
         _mockUnitOfWork.Setup(uow => uow.GameRepository.UpdateAsync(gameToEdit))
             .ReturnsAsync(gameToEdit);
@@ -175,8 +213,8 @@ public class GamesControllerTests
         Game gameToEdit = GameFactory.GenerateSingle();
 
         _mockUnitOfWork.Setup(uow => uow.GameRepository
-            .AnyAsync(editModel.Id))
-            .ReturnsAsync(false);
+            .AnyAsync(It.IsAny<Expression<Func<Game, bool>>>()))
+            .ReturnsAsync((Expression<Func<Game, bool>> predicate) => false);
 
         _mockUnitOfWork.Setup(uow => uow.GameRepository.UpdateAsync(gameToEdit))
             .ReturnsAsync(gameToEdit);
@@ -189,6 +227,26 @@ public class GamesControllerTests
     }
 
     [Fact]
+    public async Task PutGames_Returns_OkObjectResult_When_All_Games_Are_Updated()
+    {
+        // Arrange
+        List<GameEditAPIModel> apiModels = GameEditAPIModelFactory.Generate(5);
+        _mockUnitOfWork.Setup(uow => uow.GameRepository
+            .UpdateAsync(It.IsAny<Game>()))
+            .ReturnsAsync((Game g) => g);
+
+        _mockUnitOfWork.Setup(uow => uow.GameRepository
+          .AnyAsync(It.IsAny<Expression<Func<Game, bool>>>()))
+          .ReturnsAsync((Expression<Func<Game, bool>> predicate) => true);
+
+        // Act
+        var response = await _gamesController.PutGames(apiModels);
+
+        // Assert
+        Assert.IsType<OkObjectResult>(response.Result);
+    }
+
+    [Fact]
     public async Task PatchGame_Returns_OkObjectResult_If_Entity_Is_Patched()
     {
         // Arrange
@@ -196,6 +254,10 @@ public class GamesControllerTests
 
         _mockUnitOfWork.Setup(uow => uow.GameRepository.GetAsync(1))
             .ReturnsAsync(gameToPatch);
+
+        _mockUnitOfWork.Setup(uow => uow.GameRepository
+            .AnyAsync(It.IsAny<Expression<Func<Game, bool>>>()))
+            .ReturnsAsync((Expression<Func<Game, bool>> predicate) => true);
 
         JsonPatchDocument<Game> patchDocument = JsonPatchDocumentFactory
             .GenerateGamePatchDocument();
@@ -214,6 +276,10 @@ public class GamesControllerTests
         _mockUnitOfWork.Setup(uow => uow.GameRepository.GetAsync(1))
             .ReturnsAsync(() => null);
 
+        _mockUnitOfWork.Setup(uow => uow.GameRepository
+            .AnyAsync(It.IsAny<Expression<Func<Game, bool>>>()))
+            .ReturnsAsync((Expression<Func<Game, bool>> predicate) => true);
+
         JsonPatchDocument<Game> patchDocument = JsonPatchDocumentFactory
             .GenerateGamePatchDocument();
 
@@ -228,11 +294,11 @@ public class GamesControllerTests
     public async Task DeleteGame_Returns_OkObjectResult_If_Entity_Is_Deleted()
     {
         // Arrange
-        Game deletedGame = GameFactory.GenerateSingle(); 
+        Game deletedGame = GameFactory.GenerateSingle();
 
         _mockUnitOfWork.Setup(uow => uow.GameRepository
-            .AnyAsync(deletedGame.Id))
-            .ReturnsAsync(true);
+          .AnyAsync(It.IsAny<Expression<Func<Game, bool>>>()))
+          .ReturnsAsync((Expression<Func<Game, bool>> predicate) => true);
 
         _mockUnitOfWork.Setup(uow => uow.GameRepository.RemoveAsync(1))
             .ReturnsAsync(deletedGame);
@@ -248,11 +314,11 @@ public class GamesControllerTests
     public async Task DeleteGame_Returns_NotFoundResult_If_Entity_Does_Not_Exist()
     {
         // Arrange
-        Game deletedGame = GameFactory.GenerateSingle(); 
+        Game deletedGame = GameFactory.GenerateSingle();
 
         _mockUnitOfWork.Setup(uow => uow.GameRepository
-            .AnyAsync(deletedGame.Id))
-            .ReturnsAsync(false);
+         .AnyAsync(It.IsAny<Expression<Func<Game, bool>>>()))
+         .ReturnsAsync((Expression<Func<Game, bool>> predicate) => false);
 
         _mockUnitOfWork.Setup(uow => uow.GameRepository
             .RemoveAsync(deletedGame.Id))

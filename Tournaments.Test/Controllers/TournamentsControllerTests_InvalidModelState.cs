@@ -1,3 +1,5 @@
+using System.Linq.Expressions;
+
 namespace Tournaments.Test.Controllers;
 
 public class TournamentsControllerTests_InvalidModelState
@@ -30,6 +32,10 @@ public class TournamentsControllerTests_InvalidModelState
     {
         // Arrange
         TournamentCreateAPIModel createModel = TournamentCreateAPIModelFactory.GenerateSingle();
+        Tournament createdTournament = TournamentFactory.GenerateSingle();
+        _mockUnitOfWork.Setup(uow => uow.TournamentRepository
+            .AnyAsync(It.IsAny<Expression<Func<Tournament, bool>>>()))
+            .ReturnsAsync((Expression<Func<Tournament, bool>> predicate) => true);
 
         // Act
         var response = await _tournamentsController.CreateTournament(createModel);
@@ -45,8 +51,8 @@ public class TournamentsControllerTests_InvalidModelState
         TournamentEditAPIModel editModel = TournamentEditAPIModelFactory.GenerateSingle();
 
         _mockUnitOfWork.Setup(uow => uow.TournamentRepository
-            .AnyAsync(editModel.Id))
-            .ReturnsAsync(false);
+            .AnyAsync(It.IsAny<Expression<Func<Tournament, bool>>>()))
+            .ReturnsAsync((Expression<Func<Tournament, bool>> predicate) => true);
 
         // Act
         var response = await _tournamentsController.PutTournament(editModel);
@@ -63,6 +69,10 @@ public class TournamentsControllerTests_InvalidModelState
 
         _mockUnitOfWork.Setup(uow => uow.TournamentRepository.GetAsync(1))
             .ReturnsAsync(tournamentToPatch);
+
+        _mockUnitOfWork.Setup(uow => uow.TournamentRepository
+            .AnyAsync(It.IsAny<Expression<Func<Tournament, bool>>>()))
+            .ReturnsAsync((Expression<Func<Tournament, bool>> predicate) => true);
 
         JsonPatchDocument<Tournament> patchDocument = JsonPatchDocumentFactory
               .GenerateTournamentPatchDocument();
