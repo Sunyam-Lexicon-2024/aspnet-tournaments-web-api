@@ -5,7 +5,7 @@ namespace Tournaments.Test.Controllers;
 public class TournamentsControllerTests_QueryParameters
 {
     private readonly TournamentsController _tournamentsController;
-    private readonly Mock<ILogger<Tournament>> _mockLogger = new();
+    private readonly Mock<ILogger<TournamentsController>> _mockLogger = new();
     private readonly IMapper _mapper;
     private readonly Mock<IUnitOfWork> _mockUnitOfWork = new();
     private readonly List<Tournament> _mockTournaments = TournamentFactory.GenerateWithChildren(15);

@@ -3,7 +3,7 @@ namespace Tournaments.Test.Controllers;
 public class GamesControllerTests
 {
     private readonly GamesController _gamesController;
-    private readonly Mock<ILogger<Game>> _mockLogger = new();
+    private readonly Mock<ILogger<GamesController>> _mockLogger = new();
     private readonly IMapper _mapper;
     private readonly Mock<IUnitOfWork> _mockUnitOfWork = new();
     private readonly List<Game> _mockGames = GameFactory.Generate(10);

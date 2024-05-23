@@ -1,6 +1,7 @@
-using System.Reflection;
 using Games.Data.Repositories;
 using Microsoft.OpenApi.Models;
+using Serilog;
+using System.Reflection;
 
 namespace Tournaments.API.Extensions;
 
@@ -33,7 +34,10 @@ public static class WebAppExtensions
 
     public static IServiceCollection RegisterApplicationServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<TournamentsContext>(opt =>
+
+        services
+            .AddSerilog()
+            .AddDbContext<TournamentsContext>(opt =>
             opt.UseSqlServer(configuration.GetConnectionString("Default")))
             .AddScoped<IRepository<Tournament>, TournamentRepository>()
             .AddScoped<IRepository<Game>, GameRepository>()
@@ -45,9 +49,9 @@ public static class WebAppExtensions
             config.AddProfile<GameMappingProfile>();
         });
 
-        services.AddEndpointsApiExplorer();
-
-        services.AddSwaggerGen(options =>
+        services
+            .AddEndpointsApiExplorer()
+            .AddSwaggerGen(options =>
         {
             options.SwaggerDoc("v1", new OpenApiInfo
             {
@@ -61,7 +65,7 @@ public static class WebAppExtensions
                     Url = new Uri("https://github.com/suny-am")
                 },
             });
-            // using System.Reflection;
+
             var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
             options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
         });
