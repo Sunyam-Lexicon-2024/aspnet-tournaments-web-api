@@ -33,3 +33,6 @@ dotnet run -lp seed-data
 
 ## Contact
 [visualarea.1@gmail.com](mailto:visualarea.1@gmail.com)
+
+## Resources
+[Linux .NET dev certs bash script](https://github.com/BorisWilhelms/create-dotnet-devcert)

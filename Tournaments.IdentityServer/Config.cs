@@ -16,6 +16,15 @@ public static class Config
         new ApiScope(name: "tournamentAPI", displayName: "Tournaments API")
     };
 
+    public static IEnumerable<ApiResource> ApiResources =>
+    new ApiResource[]
+    {
+        new ApiResource("tournamentAPI", "Tournaments API")
+        {
+            Scopes = { "tournamentAPI" }
+        }
+    };
+
     public static IEnumerable<Client> Clients =>
     new Client[]
 
