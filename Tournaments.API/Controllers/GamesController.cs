@@ -9,6 +9,7 @@ Creates a new GamesController Instance
 <param name="unitOfWork"></param>
 <returns> A new GamesController Instance </returns>
 */
+[Authorize]
 [Route("[controller]")]
 public class GamesController(
     ILogger<GamesController> logger,

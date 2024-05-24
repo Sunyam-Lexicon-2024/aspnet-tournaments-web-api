@@ -9,11 +9,12 @@ namespace Tournaments.API.Controllers;
  <param name="unitOfWork"></param>
  <returns> A new TournamentsController Instance </returns>
  */
+[Authorize]
 [Route("[controller]")]
 public class TournamentsController(
-    ILogger<TournamentsController> logger,
-    IMapper mapper,
-    IUnitOfWork unitOfWork) : BaseController(unitOfWork)
+   ILogger<TournamentsController> logger,
+   IMapper mapper,
+   IUnitOfWork unitOfWork) : BaseController(unitOfWork)
 {
 
     private readonly ILogger<TournamentsController> _logger = logger;
@@ -289,7 +290,7 @@ public class TournamentsController(
     If one or more input attributes do not validate or if one or more of the Tournaments specified does not exist
     </response>
     <response code="500"> If an unexpected result is produced by the server</response>
-    */ 
+    */
     [HttpPut]
     [Route("collection")]
     [ProducesResponseType<TournamentAPIModel>(StatusCodes.Status200OK)]

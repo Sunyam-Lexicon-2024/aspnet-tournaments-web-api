@@ -14,3 +14,4 @@ global using Microsoft.AspNetCore.JsonPatch;
 global using Microsoft.AspNetCore.Mvc;
 global using System.Linq.Expressions;
 global using Microsoft.AspNetCore.JsonPatch.Exceptions;
+global using Microsoft.AspNetCore.Authorization;
