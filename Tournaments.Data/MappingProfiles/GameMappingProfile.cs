@@ -1,4 +1,4 @@
-namespace Tournaments.Data.Mappings;
+namespace Tournaments.Data.MappingProfiles;
 
 public class GameMappingProfile : Profile
 {

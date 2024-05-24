@@ -1,4 +1,6 @@
 using Games.Data.Repositories;
+using Microsoft.IdentityModel.Protocols.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Reflection;
@@ -34,7 +36,6 @@ public static class WebAppExtensions
 
     public static IServiceCollection RegisterApplicationServices(this IServiceCollection services, IConfiguration configuration)
     {
-
         services
             .AddSerilog()
             .AddDbContext<TournamentsContext>(opt =>
@@ -69,6 +70,23 @@ public static class WebAppExtensions
             var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
             options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
         });
+
+        services.AddAuthentication()
+                .AddJwtBearer(options =>
+                {
+                    options.Authority = configuration["Oidc:Authority"] ??
+                        throw new InvalidConfigurationException("Could not get Authority for OIDC authorization from configuration");
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidIssuer = configuration["Oidc:Authority"], // Ensure this matches the Authority
+                        ValidateAudience = false,
+                        ValidAudience = "tournamentAPI", // This should match the API scope name
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true
+                    };
+
+                });
 
         return services;
     }

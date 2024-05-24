@@ -9,11 +9,12 @@ namespace Tournaments.API.Controllers;
  <param name="unitOfWork"></param>
  <returns> A new TournamentsController Instance </returns>
  */
+[Authorize]
 [Route("[controller]")]
 public class TournamentsController(
-    ILogger<TournamentsController> logger,
-    IMapper mapper,
-    IUnitOfWork unitOfWork) : BaseController(unitOfWork)
+   ILogger<TournamentsController> logger,
+   IMapper mapper,
+   IUnitOfWork unitOfWork) : BaseController(unitOfWork)
 {
 
     private readonly ILogger<TournamentsController> _logger = logger;
@@ -91,7 +92,7 @@ public class TournamentsController(
     {
         Tournament? tournament;
 
-        if (queryParams?.IncludeChildren is true)
+        if (queryParams?.IncludeGames is true)
         {
             tournament = await _unitOfWork.TournamentRepository
                 .GetAsyncWithChildren(tournamentId);
@@ -156,7 +157,6 @@ public class TournamentsController(
         }
         catch (DbUpdateException ex)
         {
-            // TBD append error details here
             LogError(ex, createModel, _logger);
             return StatusCode(500);
         }
@@ -272,7 +272,6 @@ public class TournamentsController(
         }
         catch (DbUpdateException ex)
         {
-            // TBD append error details here
             LogError(ex, editModel, _logger);
             return StatusCode(500);
         }
@@ -289,7 +288,7 @@ public class TournamentsController(
     If one or more input attributes do not validate or if one or more of the Tournaments specified does not exist
     </response>
     <response code="500"> If an unexpected result is produced by the server</response>
-    */ 
+    */
     [HttpPut]
     [Route("collection")]
     [ProducesResponseType<TournamentAPIModel>(StatusCodes.Status200OK)]
@@ -318,7 +317,6 @@ public class TournamentsController(
                     }
                     if (!await TournamentExists(t => t.Id == em.Id))
                     {
-                        // activte canellationToken here
                         cancellationTokenSource.Cancel();
                         break;
                     }
@@ -343,7 +341,6 @@ public class TournamentsController(
         }
         catch (DbUpdateException ex)
         {
-            // TBD append error details here
             LogError(ex, editModels, _logger);
             return StatusCode(500);
         }

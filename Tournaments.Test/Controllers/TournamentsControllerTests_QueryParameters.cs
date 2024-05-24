@@ -54,7 +54,7 @@ public class TournamentsControllerTests_QueryParameters
     public async Task GetTournaments_Returns_Entities_With_Children_When_IncludChildren_Param_Is_Used()
     {
         // Arrange
-        QueryParameters queryParams = QueryParametersFactory.IncludeChildrenParams();
+        QueryParameters queryParams = QueryParametersFactory.IncludeGamesParams();
         _mockUnitOfWork.Setup(uow => uow.TournamentRepository.GetAsyncByParams(queryParams))
             .ReturnsAsync(_mockTournaments);
 

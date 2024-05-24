@@ -3,11 +3,11 @@ namespace Tournaments.Test.Factories;
 public class QueryParametersFactory
 {
 
-    public static QueryParameters IncludeChildrenParams()
+    public static QueryParameters IncludeGamesParams()
     {
         return new QueryParameters()
         {
-            IncludeChildren = true,
+            IncludeGames = true,
         };
     }
 

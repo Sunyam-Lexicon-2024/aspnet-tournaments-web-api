@@ -9,6 +9,7 @@ Creates a new GamesController Instance
 <param name="unitOfWork"></param>
 <returns> A new GamesController Instance </returns>
 */
+[Authorize]
 [Route("[controller]")]
 public class GamesController(
     ILogger<GamesController> logger,
@@ -274,7 +275,6 @@ public class GamesController(
         }
         catch (DbUpdateException ex)
         {
-            // TBD append error details here
             LogError(ex, editModel, _logger);
             return StatusCode(500);
         }
@@ -339,7 +339,6 @@ public class GamesController(
                     }
                     if (!await GameExists(g => g.Id == em.Id))
                     {
-                        // activte canellationToken here
                         cancellationTokenSource.Cancel();
                         break;
                     }
@@ -365,7 +364,6 @@ public class GamesController(
         }
         catch (DbUpdateException ex)
         {
-            // TBD append error details here
             LogError(ex, editModels, _logger);
             return StatusCode(500);
         }
@@ -483,7 +481,6 @@ public class GamesController(
             }
             catch (DbUpdateException ex)
             {
-                // TBD append error details here
                 LogError(ex, gameId, _logger);
                 return StatusCode(500);
             }

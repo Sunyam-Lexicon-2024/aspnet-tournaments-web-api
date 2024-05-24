@@ -37,6 +37,7 @@ try
     }
 
     app.UseHttpsRedirection()
+       .UseAuthentication()
        .UseAuthorization();
 
     app.MapControllers();
