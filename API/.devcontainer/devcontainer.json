@@ -1,9 +1,6 @@
 {
 	"name": "Tournaments API",
-	"dockerComposeFile": [
-		"../../docker-compose.yaml",
-		"docker-compose.extend.yaml"
-	],
+	"dockerComposeFile": "../../development.docker-compose.yaml",
 	"service": "api",
 	"workspaceFolder": "/workspace",
 	"remoteEnv": {

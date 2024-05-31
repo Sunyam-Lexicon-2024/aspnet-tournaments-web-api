@@ -1,14 +1,11 @@
 ARG BUILDKIT_INLINE_CACHE=0
 
-FROM mcr.microsoft.com/devcontainers/dotnet:1-8.0-bookworm
+FROM mcr.microsoft.com/devcontainers/dotnet:1-8.0-bookworm AS development
 
-WORKDIR /
-RUN \
-    git clone https://github.com/BorisWilhelms/create-dotnet-devcert && \
-    cd create-dotnet-devcert/scripts && \
-    chmod +x *.sh && \
-    ./ubuntu-create-dotnet-devcert.sh && \
-    cd /workspace && \
-    rm -rf create-dotnet-devcert
+ENV DOTNET_ENVIRONMENT=Development
+
+COPY .devcontainer/entrypoint.sh /usr/local/bin/entrypoint.sh
+
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 USER vscode

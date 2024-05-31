@@ -3,29 +3,45 @@ services:
   api:
     container_name: tournaments-api
     build:
-      dockerfile: ./API/Dockerfile
+      context: ./API/
+      dockerfile: Dockerfile
+      target: development
       args:
         - BUILDKIT_INLINE_CACHE=0
     user: vscode
-    command: "tail -f /dev/null"
-    environment:
-      - DOTNET_ENVIRONMENT=Development
+    volumes:
+      - ./API:/workspace
+    entrypoint: [ "/usr/local/bin/entrypoint.sh" ]
+    command: [ "tail", "-f", "/dev/null" ]
+    ports:
+      - 3000:3000
+      - 3001:3001
+    expose:
+      - 3000
+      - 3001
     networks:
       - development
 
   identity-service:
     container_name: tournaments-identity-service
     build:
-      dockerfile: ./IdentityService/Dockerfile
+      context: ./IdentityService/
+      dockerfile: Dockerfile
+      target: development
       args:
         - BUILDKIT_INLINE_CACHE=0
     user: vscode
-    command: "tail -f /dev/null"
-    environment:
-      - DOTNET_ENVIRONMENT=Development
+    volumes:
+      - ./IdentityService:/workspace
+    entrypoint: [ "/usr/local/bin/entrypoint.sh" ]
+    command: [ "tail", "-f", "/dev/null" ]
+    ports:
+      - 5001
+    expose:
+      - 5001
     networks:
       - development
-      
+
   database:
     container_name: tournaments-db
     image: "mcr.microsoft.com/mssql/server:2022-latest"
