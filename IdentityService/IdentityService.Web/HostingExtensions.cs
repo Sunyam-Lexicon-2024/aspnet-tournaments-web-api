@@ -1,6 +1,6 @@
 using Serilog;
 
-namespace Tournaments.IdentityServer;
+namespace IdentityService.Web;
 
 internal static class HostingExtensions
 {

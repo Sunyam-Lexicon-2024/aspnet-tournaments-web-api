@@ -1,17 +1,32 @@
-services: 
+services:
 
   api:
     container_name: tournaments-api
-    image: "mcr.microsoft.com/devcontainers/dotnet:1-8.0-bookworm"
+    build:
+      dockerfile: ./API/Dockerfile
+      args:
+        - BUILDKIT_INLINE_CACHE=0
+    user: vscode
     command: "tail -f /dev/null"
     environment:
       - DOTNET_ENVIRONMENT=Development
-    volumes:
-      - .:/workspace
     networks:
-        - development
+      - development
 
-  database: 
+  identity-service:
+    container_name: tournaments-identity-service
+    build:
+      dockerfile: ./IdentityService/Dockerfile
+      args:
+        - BUILDKIT_INLINE_CACHE=0
+    user: vscode
+    command: "tail -f /dev/null"
+    environment:
+      - DOTNET_ENVIRONMENT=Development
+    networks:
+      - development
+      
+  database:
     container_name: tournaments-db
     image: "mcr.microsoft.com/mssql/server:2022-latest"
     environment:

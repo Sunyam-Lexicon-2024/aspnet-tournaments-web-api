@@ -1,6 +1,6 @@
 ﻿using Duende.IdentityServer.Models;
 
-namespace Tournaments.IdentityServer;
+namespace IdentityService.Web;
 
 public static class Config
 {

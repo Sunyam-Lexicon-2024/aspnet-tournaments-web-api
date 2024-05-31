@@ -1,4 +1,4 @@
-﻿using Tournaments.IdentityServer;
+﻿using IdentityService.Web;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
