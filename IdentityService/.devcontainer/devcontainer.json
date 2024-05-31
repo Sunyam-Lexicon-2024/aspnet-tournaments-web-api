@@ -1,9 +1,6 @@
 {
 	"name": "Tournaments Identity Service",
-	"dockerComposeFile": [
-		"../../docker-compose.yaml",
-		"docker-compose.extend.yaml"
-	],
+	"dockerComposeFile": "../../development.docker-compose.yaml",
 	"service": "identity-service",
 	"workspaceFolder": "/workspace",
 	"remoteEnv": {
