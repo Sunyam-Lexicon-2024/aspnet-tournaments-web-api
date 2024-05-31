@@ -1,0 +1,33 @@
+{
+	"name": "Tournaments Identity Service",
+	"dockerComposeFile": [
+		"../../docker-compose.yaml",
+		"docker-compose.extend.yaml"
+	],
+	"service": "identity-service",
+	"workspaceFolder": "/workspace",
+	"remoteEnv": {
+		"BUILDKIT_INLINE_CACHE": "0"
+	},
+	"containerUser": "vscode",
+	"containerEnv": {
+		"HOME": "/home/vscode"
+	},
+	"shutdownAction": "stopCompose",
+	"features": {
+		"ghcr.io/azure/azure-dev/azd:0": {},
+		"ghcr.io/devcontainers/features/dotnet:2": {}
+	},
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"terminal.integrated.defaultProfile.linux": "zsh"
+			},
+			"extensions": [
+				"ms-dotnettools.csdevkit",
+				"ms-dotnettools.vscodeintellicode-csharp",
+				"ms-mssql.mssql"
+			]
+		}
+	}
+}
