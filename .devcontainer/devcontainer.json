@@ -1,5 +1,5 @@
 {
-	"name": "Garage 2.0",
+	"name": "Tournaments API",
 	"dockerComposeFile": "../docker-compose.yaml",
 	"service": "app",
 	"workspaceFolder": "/workspace",
