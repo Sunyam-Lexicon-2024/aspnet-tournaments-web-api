@@ -1,7 +1,7 @@
 {
 	"name": "Tournaments API",
 	"dockerComposeFile": "../docker-compose.yaml",
-	"service": "app",
+	"service": "api",
 	"workspaceFolder": "/workspace",
 	"shutdownAction": "stopCompose",
 	"containerEnv": {

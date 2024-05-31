@@ -1,7 +1,7 @@
-version: "3.9"
-
 services: 
-  app:
+
+  api:
+    container_name: tournaments-api
     image: "mcr.microsoft.com/devcontainers/dotnet:1-8.0-bookworm"
     command: "tail -f /dev/null"
     environment:
@@ -12,8 +12,8 @@ services:
         - development
 
   database: 
-    image: "mcr.microsoft.com/mssql/server:2022-latest"
     container_name: tournaments-db
+    image: "mcr.microsoft.com/mssql/server:2022-latest"
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_DATABASE: "DevelopmentDB"
