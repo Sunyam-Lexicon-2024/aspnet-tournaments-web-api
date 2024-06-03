@@ -10,7 +10,7 @@ services:
         - BUILDKIT_INLINE_CACHE=0
     user: vscode
     volumes:
-      - ./API:/workspace
+      - .:/workspace
     entrypoint: [ "/usr/local/bin/entrypoint.sh" ]
     command: [ "tail", "-f", "/dev/null" ]
     ports:
@@ -32,7 +32,7 @@ services:
         - BUILDKIT_INLINE_CACHE=0
     user: vscode
     volumes:
-      - ./IdentityService:/workspace
+      - .:/workspace
     entrypoint: [ "/usr/local/bin/entrypoint.sh" ]
     command: [ "tail", "-f", "/dev/null" ]
     ports:
