@@ -1,34 +1,30 @@
-﻿using Duende.IdentityServer.Models;
+﻿using Duende.IdentityServer;
+using Duende.IdentityServer.Models;
 
 namespace IdentityService.Web;
 
 public static class Config
 {
     public static IEnumerable<IdentityResource> IdentityResources =>
-        new IdentityResource[]
-        {
-            new IdentityResources.OpenId()
-        };
+    [
+        new IdentityResources.OpenId()
+    ];
 
     public static IEnumerable<ApiScope> ApiScopes =>
-    new ApiScope[]
-    {
+    [
         new ApiScope(name: "tournamentAPI", displayName: "Tournaments API")
-    };
+    ];
 
     public static IEnumerable<ApiResource> ApiResources =>
-    new ApiResource[]
-    {
+    [
         new ApiResource("tournamentAPI", "Tournaments API")
         {
             Scopes = { "tournamentAPI" }
         }
-    };
+    ];
 
     public static IEnumerable<Client> Clients =>
-    new Client[]
-
-    {
+    [
         new Client
         {
             ClientId = "devClient",
@@ -44,6 +40,27 @@ public static class Config
 
             // scopes that client has access to
             AllowedScopes = { "tournamentAPI" }
-        }
-    };
+        },
+        new Client
+        {
+            ClientId = "devClientInteractive",
+
+            AllowedGrantTypes = GrantTypes.Code,
+            AllowOfflineAccess =true,
+
+            ClientSecrets =
+            {
+                new Secret("devSecretInteractive".Sha256())
+            },
+
+            AllowedScopes = {
+
+                IdentityServerConstants.StandardScopes.OpenId,
+                IdentityServerConstants.StandardScopes.Profile,
+                IdentityServerConstants.StandardScopes.Email,
+
+                "tournamentAPI"
+            }
+        },
+    ];
 }
