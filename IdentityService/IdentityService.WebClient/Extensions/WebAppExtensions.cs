@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication;
+
 namespace IdentityService.WebClient.Extensions;
 
 public static class WebAppExtensions
@@ -23,6 +25,8 @@ public static class WebAppExtensions
             options.Scope.Clear();
             options.Scope.Add("openid");
             options.Scope.Add("profile");
+
+            options.ClaimActions.MapJsonKey("email_verified", "email_verified");
 
             options.GetClaimsFromUserInfoEndpoint = true;
 

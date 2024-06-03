@@ -1,7 +1,8 @@
 ﻿using Duende.IdentityServer;
 using Duende.IdentityServer.Models;
+using IdentityModel;
 
-namespace IdentityService.Web;
+namespace IdentityService.WebServer;
 
 public static class Config
 {
@@ -11,11 +12,11 @@ public static class Config
         new IdentityResources.Profile(),
         new IdentityResource() {
             Name = "verification",
-            UserClaims = new List<string>
-            {
+            UserClaims =
+            [
                 JwtClaimTypes.Email,
                 JwtClaimTypes.EmailVerified,
-            }
+            ]
         }
     ];
 
@@ -66,9 +67,9 @@ public static class Config
             PostLogoutRedirectUris = { "https://localhost:5002/signout-callback-oidc" },
 
             AllowedScopes = {
-
                 IdentityServerConstants.StandardScopes.OpenId,
                 IdentityServerConstants.StandardScopes.Profile,
+                "verification"
             }
         },
     ];

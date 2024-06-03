@@ -1,4 +1,4 @@
-﻿using IdentityService.Web;
+﻿using IdentityService.WebServer;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()

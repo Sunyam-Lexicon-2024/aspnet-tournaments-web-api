@@ -1,6 +1,6 @@
 using Serilog;
 
-namespace IdentityService.Web;
+namespace IdentityService.WebServer;
 
 internal static class HostingExtensions
 {
