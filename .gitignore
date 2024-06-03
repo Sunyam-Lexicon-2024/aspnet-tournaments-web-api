@@ -1,4 +1,6 @@
+# .NET Build
 obj/
 bin/
 
+# IdentityServer
 keys/
