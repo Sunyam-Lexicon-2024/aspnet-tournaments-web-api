@@ -204,7 +204,8 @@ If the application is run locally, make sure to mirror the MSSQL setup provided 
 - [x] Authentication/Authorization (OIDC)
   - [x] IdentityServer
   - [x] Console Test Application
-  - [ ] Web Client Test Application
+  - [x] Web Client Test Application
+  - [ ] External Authentication (Google)
 
 <br>
 

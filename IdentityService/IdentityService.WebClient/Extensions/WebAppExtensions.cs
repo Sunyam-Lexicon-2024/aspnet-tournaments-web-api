@@ -24,6 +24,8 @@ public static class WebAppExtensions
             options.Scope.Add("openid");
             options.Scope.Add("profile");
 
+            options.GetClaimsFromUserInfoEndpoint = true;
+
             options.MapInboundClaims = false; // Disable claim relabling
 
             options.SaveTokens = true;
