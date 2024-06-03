@@ -20,7 +20,9 @@ try
         .ConfigureServices()
         .ConfigurePipeline();
     
-    app.Run();
+    await app.RunAsync();
+
+    Log.Information("Application exited cleanly");
 }
 catch (Exception ex)
 {
