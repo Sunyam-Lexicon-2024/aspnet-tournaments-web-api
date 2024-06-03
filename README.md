@@ -197,8 +197,14 @@ If the application is run locally, make sure to mirror the MSSQL setup provided 
 - [x] Pagination
 - [x] Seed Data
 - [x] xUnit Tests
-- [x] Logging
-- [x] Authentication (OIDC)
+  - [x] Controller Tests
+  - [ ] Repository Tests
+- [x] Logging 
+  - [x] Serilog
+- [x] Authentication/Authorization (OIDC)
+  - [x] IdentityServer
+  - [x] Console Test Application
+  - [ ] Web Client Test Application
 
 <br>
 
