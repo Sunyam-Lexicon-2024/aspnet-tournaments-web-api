@@ -2,7 +2,7 @@
 // See LICENSE in the project root for license information.
 
 
-namespace IdentityService.Web.Pages.Logout;
+namespace IdentityService.WebServer.Pages.Logout;
 
 public static class LogoutOptions
 {

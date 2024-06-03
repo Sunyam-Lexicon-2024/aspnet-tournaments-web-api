@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace IdentityService.Web.Pages.Consent;
+namespace IdentityService.WebServer.Pages.Consent;
 
 [Authorize]
 [SecurityHeaders]

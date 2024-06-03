@@ -147,7 +147,7 @@ This is an example of how to install required .NET SDK and runtime on Debian 12.
    ```sh
    dotnet run --project API/Tournaments.API -lp seed-data
    dotnet run --project IdentityService/IdentityService.Web
-   dotnet run --project IdentityService/IdentityService.Client
+   dotnet run --project IdentityService/IdentityService.Console
    ```
 
 #### Docker Compose

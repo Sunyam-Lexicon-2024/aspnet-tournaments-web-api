@@ -1,7 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-namespace IdentityService.Web.Pages.Ciba;
+namespace IdentityService.WebServer.Pages.Ciba;
 
 public class ViewModel
 {

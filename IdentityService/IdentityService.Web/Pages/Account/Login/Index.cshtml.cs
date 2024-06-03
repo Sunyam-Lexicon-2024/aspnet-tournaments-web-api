@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace IdentityService.Web.Pages.Login;
+namespace IdentityService.WebServer.Pages.Login;
 
 [SecurityHeaders]
 [AllowAnonymous]
