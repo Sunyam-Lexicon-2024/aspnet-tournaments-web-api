@@ -44,23 +44,23 @@ public static class Config
         },
         new Client
         {
-            ClientId = "devClientInteractive",
+            ClientId = "devWeb",
 
             AllowedGrantTypes = GrantTypes.Code,
-            AllowOfflineAccess =true,
 
             ClientSecrets =
             {
-                new Secret("devSecretInteractive".Sha256())
+                new Secret("devWebSecret".Sha256())
             },
+
+            RedirectUris = { "https://localhost:5002/signin-oidc" },
+
+            PostLogoutRedirectUris = { "https://localhost:5002/signout-callback-oidc" },
 
             AllowedScopes = {
 
                 IdentityServerConstants.StandardScopes.OpenId,
                 IdentityServerConstants.StandardScopes.Profile,
-                IdentityServerConstants.StandardScopes.Email,
-
-                "tournamentAPI"
             }
         },
     ];
