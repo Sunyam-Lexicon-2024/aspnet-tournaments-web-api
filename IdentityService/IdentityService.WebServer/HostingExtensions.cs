@@ -24,18 +24,18 @@ internal static class HostingExtensions
         builder.Services.AddAuthentication()
                         .AddGoogle("Google", options =>
                         {
+                            bool validAuthConfig = ValidateAuthConfiguration(builder.Configuration);
+
+                            if (!validAuthConfig)
+                            {
+                                Log.Error("Invalid Auth Config");
+                                return;
+                            }
+
                             options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
 
-                            if (string.IsNullOrWhiteSpace(builder.Configuration["Authentication:Google:ClientId"]))
-                            {
-                                Log.Error("Could not find Google Oauth Client ID In Configuration");
-                                return;
-                            }
-                            if (string.IsNullOrWhiteSpace(builder.Configuration["Authentication:Google:ClientId"]))
-                            {
-                                Log.Error("Could not find Google Oauth Client Secret In Configuration");
-                                return;
-                            }
+                            options.CallbackPath = builder.Configuration["Authentication:Google:CallbackPath"];
+                            options.CallbackPath = builder.Configuration["Authentication:Google:PostLogoutRedirectUri"];
 
                             options.ClientId = builder.Configuration["Authentication:Google:ClientId"]!;
                             options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!;
@@ -64,5 +64,38 @@ internal static class HostingExtensions
         app.MapRazorPages().RequireAuthorization();
 
         return app;
+    }
+
+    private static bool ValidateAuthConfiguration(IConfiguration configuration)
+    {
+
+        bool validAuthConfig = true;
+
+        if (string.IsNullOrWhiteSpace(configuration["Authentication:Google:ClientId"]))
+        {
+            Log.Error("Could not load [Authentication:Google:ClientId] from configuration");
+            validAuthConfig = false;
+        }
+        if (string.IsNullOrWhiteSpace(configuration["Authentication:Google:ClientSecret"]))
+        {
+
+            Log.Error("Could not load [Authentication:Google:ClientSecret] from configuration");
+            validAuthConfig = false;
+        }
+        if (string.IsNullOrWhiteSpace(configuration["Authentication:Google:CallbackPath"]))
+        {
+
+            Log.Error("Could not load [Authentication:Google:CallbackPath] from configuration");
+            validAuthConfig = false;
+        }
+        if (string.IsNullOrWhiteSpace(configuration["Authentication:Google:PostLogoutRedirectUri"]))
+        {
+
+            Log.Error("Could not load [Authentication:Google:PostLogoutRedirectUri] from configuration");
+            validAuthConfig = false;
+        }
+
+        return validAuthConfig;
+
     }
 }
