@@ -5,5 +5,5 @@ bin/
 # IdentityServer
 keys/
 
-# OAuth Client ID
-client_oauth_id.json
+# Environment variables
+*.env
