@@ -67,7 +67,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-![![Controller Web API Screen Shot][controller-web-api-screenshot]](.docs/images/screenshot.png)
+![![Tournaments API  Screenshot][product-screenshot]](.docs/images/screenshot.png)
 
 A Controller based ASP.NET Web API created as part of studies carried out at [Lexicon AB](https://lexicon.se) 2024
 
@@ -207,6 +207,11 @@ If the application is run locally, make sure to mirror the MSSQL setup provided 
   - [x] Web Client Test Application
   - [x] Verify claims
   - [x] External Authentication (Google) [Google API:s console](https://console.cloud.google.com/apis/credentials/oauthclient/)
+  - [] API Access
+  - [] EntityFramework Core integration
+  - [] ASP.NET Core Identity integration
+  - [] React Client Integration
+  - [] Blazor Client integration
 
 <br>
 
@@ -269,6 +274,7 @@ Your Name - [@sunyam.bsky.social](https://bsky.app/profile/sunyam.bsky.social) -
 
 <p align="right"><a href="#readme-top">🔝</a></p>
 
+<!-- MARKDOWN LINKS & IMAGES -->
 [contributors-shield]: https://img.shields.io/github/contributors/sunyam-lexicon-2024/tournaments-api.svg?style=for-the-badge
 [contributors-url]: https://github.com/sunyam-lexicon-2024/tournaments-api/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/sunyam-lexicon-2024/tournaments-api?style=for-the-badge
