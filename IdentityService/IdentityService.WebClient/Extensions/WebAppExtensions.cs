@@ -18,8 +18,8 @@ public static class WebAppExtensions
         {
             options.Authority = configuration["Oidc:Authority"];
 
-            options.ClientId = "devWeb";
-            options.ClientSecret = "devWebSecret";
+            options.ClientId = "dev-web";
+            options.ClientSecret = "dev-web-client-secret";
             options.ResponseType = "code";
 
             options.Scope.Clear();
