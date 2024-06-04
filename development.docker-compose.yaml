@@ -9,6 +9,8 @@ services:
       args:
         - BUILDKIT_INLINE_CACHE=0
     user: vscode
+    env_file:
+      - development.env
     volumes:
       - .:/workspace
     entrypoint: [ "/usr/local/bin/entrypoint.sh" ]
@@ -31,6 +33,8 @@ services:
       args:
         - BUILDKIT_INLINE_CACHE=0
     user: vscode
+    env_file:
+      - development.env
     volumes:
       - .:/workspace
     entrypoint: [ "/usr/local/bin/entrypoint.sh" ]

@@ -206,7 +206,7 @@ If the application is run locally, make sure to mirror the MSSQL setup provided 
   - [x] Console Test Application
   - [x] Web Client Test Application
   - [x] Verify claims
-  - [ ] External Authentication (Google)
+  - [x] External Authentication (Google) [Google API:s console](https://console.cloud.google.com/apis/credentials/oauthclient/)
 
 <br>
 

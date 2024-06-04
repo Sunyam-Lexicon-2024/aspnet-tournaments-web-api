@@ -26,8 +26,8 @@ if (discovery.IsError)
 var tokenResponse = await client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
 {
     Address = discovery.TokenEndpoint,
-    ClientId = "devClient",
-    ClientSecret = "devSecret",
+    ClientId = "dev-console",
+    ClientSecret = "dev-console-secret",
     Scope = "tournamentAPI"
 });
 

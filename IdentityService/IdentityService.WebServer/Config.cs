@@ -37,7 +37,7 @@ public static class Config
     [
         new Client
         {
-            ClientId = "devClient",
+            ClientId = "dev-console",
 
             // no interactive user, use the clientid/secret for authentication
             AllowedGrantTypes = GrantTypes.ClientCredentials,
@@ -45,7 +45,7 @@ public static class Config
             // secret for authentication
             ClientSecrets =
             {
-                new Secret("devSecret".Sha256())
+                new Secret("dev-console-secret".Sha256())
             },
 
             // scopes that client has access to
@@ -53,24 +53,24 @@ public static class Config
         },
         new Client
         {
-            ClientId = "devWeb",
+            ClientId = "dev-web-client",
 
             AllowedGrantTypes = GrantTypes.Code,
 
             ClientSecrets =
             {
-                new Secret("devWebSecret".Sha256())
+                new Secret("dev-web-client-secret".Sha256())
             },
 
-            RedirectUris = { "https://localhost:5002/signin-oidc" },
+            RedirectUris = { "https://localhost:5002/login-oidc" },
 
-            PostLogoutRedirectUris = { "https://localhost:5002/signout-callback-oidc" },
+            PostLogoutRedirectUris = { "https://localhost:5002/logout-callback-oidc" },
 
             AllowedScopes = {
                 IdentityServerConstants.StandardScopes.OpenId,
                 IdentityServerConstants.StandardScopes.Profile,
                 "verification"
             }
-        },
+        }
     ];
 }
